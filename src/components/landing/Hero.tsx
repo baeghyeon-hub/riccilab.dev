@@ -90,7 +90,7 @@ function ReactiveTitle() {
   }, []);
 
   return (
-    <div className="absolute inset-y-0 right-0 w-[50%] flex items-center justify-end pr-8 md:pr-16 lg:pr-24 pointer-events-none">
+    <div className="hidden md:flex absolute inset-y-0 right-0 w-[50%] items-center justify-end pr-8 md:pr-16 lg:pr-24 pointer-events-none">
       {/* Invisible stable hit area — doesn't move with transforms */}
       <div ref={hitRef} className="relative cursor-crosshair pointer-events-auto">
         <div

@@ -112,7 +112,7 @@ export function LabBackground() {
           <span
             key={i}
             data-float
-            className="absolute font-mono text-[10px] tracking-[0.15em] text-black/40 select-none"
+            className={`absolute font-mono text-[10px] tracking-[0.15em] text-black/40 select-none ${i >= 6 ? "hidden md:block" : ""}`}
             style={{
               top: `${8 + (i * 7.5) % 85}%`,
               left: `${5 + ((i * 17 + 13) % 90)}%`,
