@@ -5,7 +5,8 @@ import { gsap } from "@/lib/gsap";
 
 const GLITCH_CHARS = "!@#$%&_░▒▓█▀▄?><";
 
-function ReactiveTitle() {
+// Desktop: absolute right, mouse-reactive
+function DesktopReactiveTitle() {
   const hitRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const originalText = "RICCI\nLAB";
@@ -28,34 +29,22 @@ function ReactiveTitle() {
     };
 
     const handleMove = (e: MouseEvent) => {
-      // Use the stable hitArea rect for calculations (it doesn't move)
       const rect = hitArea.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
       const dx = (e.clientX - cx) / rect.width;
       const dy = (e.clientY - cy) / rect.height;
-
-      xTo(dx * 18);
-      yTo(dy * 12);
-      rotTo(dx * 2);
-      skewTo(dx * 3);
-
+      xTo(dx * 18); yTo(dy * 12); rotTo(dx * 2); skewTo(dx * 3);
       currentDist = Math.sqrt(dx * dx + dy * dy);
 
       if (!glitchInterval) {
         glitchInterval = setInterval(() => {
           if (currentDist > 0.25) {
             const intensity = Math.min((currentDist - 0.25) * 0.8, 0.3);
-            const glitched = originalText
-              .split("")
-              .map((ch) => {
-                if (ch === "\n") return ch;
-                return Math.random() < intensity
-                  ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)]
-                  : ch;
-              })
-              .join("");
-            textEl.textContent = glitched;
+            textEl.textContent = originalText.split("").map((ch) =>
+              ch === "\n" ? ch : Math.random() < intensity
+                ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] : ch
+            ).join("");
           } else {
             textEl.textContent = originalText;
           }
@@ -64,19 +53,12 @@ function ReactiveTitle() {
     };
 
     const handleLeave = () => {
-      xTo(0);
-      yTo(0);
-      rotTo(0);
-      skewTo(0);
-      if (glitchInterval) {
-        clearInterval(glitchInterval);
-        glitchInterval = null;
-      }
+      xTo(0); yTo(0); rotTo(0); skewTo(0);
+      if (glitchInterval) { clearInterval(glitchInterval); glitchInterval = null; }
       gsap.to(textEl, { scale: 1, duration: 0.5, ease: "power2.out" });
       textEl.textContent = originalText;
     };
 
-    // Events on the hit area (stable, doesn't move with GSAP transforms)
     hitArea.addEventListener("mouseenter", handleEnter);
     hitArea.addEventListener("mousemove", handleMove);
     hitArea.addEventListener("mouseleave", handleLeave);
@@ -90,15 +72,64 @@ function ReactiveTitle() {
   }, []);
 
   return (
-    <div className="hidden md:flex absolute inset-y-0 right-0 w-[50%] items-center justify-end pr-8 md:pr-16 lg:pr-24 pointer-events-none">
-      {/* Invisible stable hit area — doesn't move with transforms */}
+    <div className="hidden md:flex absolute inset-y-0 right-0 w-[50%] items-center justify-end pr-16 lg:pr-24 pointer-events-none">
       <div ref={hitRef} className="relative cursor-crosshair pointer-events-auto">
-        <div
-          ref={textRef}
-          className="text-[clamp(4rem,12vw,11rem)] font-black text-black leading-[0.85] tracking-tighter select-none whitespace-pre will-change-transform"
-        >
+        <div ref={textRef} className="text-[clamp(4rem,12vw,11rem)] font-black text-black leading-[0.85] tracking-tighter select-none whitespace-pre will-change-transform">
           {`RICCI\nLAB`}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Mobile: top positioned, tap to glitch
+function MobileTitle() {
+  const textRef = useRef<HTMLDivElement>(null);
+  const originalText = "RICCILAB";
+
+  useEffect(() => {
+    const textEl = textRef.current;
+    if (!textEl) return;
+
+    const doGlitch = () => {
+      // 3-frame glitch burst
+      const scramble = () => originalText.split("").map((ch) =>
+        Math.random() < 0.4 ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] : ch
+      ).join("");
+
+      textEl.textContent = scramble();
+      gsap.to(textEl, { x: Math.random() * 6 - 3, skewX: Math.random() * 4 - 2, duration: 0.05 });
+
+      setTimeout(() => {
+        textEl.textContent = scramble();
+        gsap.to(textEl, { x: Math.random() * 4 - 2, skewX: Math.random() * 3 - 1.5, duration: 0.05 });
+      }, 60);
+
+      setTimeout(() => {
+        textEl.textContent = originalText;
+        gsap.to(textEl, { x: 0, skewX: 0, duration: 0.2, ease: "power2.out" });
+      }, 130);
+    };
+
+    const handleTouch = () => doGlitch();
+    textEl.addEventListener("touchstart", handleTouch, { passive: true });
+
+    // Also do a periodic subtle glitch
+    const interval = setInterval(doGlitch, 4000 + Math.random() * 3000);
+
+    return () => {
+      textEl.removeEventListener("touchstart", handleTouch);
+      clearInterval(interval);
+    };
+  }, []);
+
+  return (
+    <div className="md:hidden mb-6" data-mobile-title>
+      <div
+        ref={textRef}
+        className="text-[3.5rem] font-black text-black leading-none tracking-tighter select-none will-change-transform"
+      >
+        RICCILAB
       </div>
     </div>
   );
@@ -194,11 +225,18 @@ export function Hero() {
         delay,
       });
 
+      // Mobile title
+      const mobileTitle = sectionRef.current?.querySelector("[data-mobile-title]");
+      if (mobileTitle) {
+        tl.fromTo(mobileTitle, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 });
+      }
+
       // Bio text slides up
       tl.fromTo(
         bioRef.current,
         { y: 20, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.7 }
+        { y: 0, opacity: 1, duration: 0.7 },
+        mobileTitle ? "-=0.3" : "+=0"
       );
 
       // Formula appears
@@ -243,10 +281,13 @@ export function Hero() {
       ref={sectionRef}
       className="relative min-h-[92vh] flex flex-col justify-center px-6 md:px-12 lg:px-20 pt-20"
     >
-      {/* Mouse-reactive title on the right */}
-      <ReactiveTitle />
+      {/* Desktop: mouse-reactive on the right */}
+      <DesktopReactiveTitle />
 
       <div className="relative z-10 max-w-[700px] w-full">
+        {/* Mobile: tap-to-glitch title at top */}
+        <MobileTitle />
+
         {/* Bio */}
         <div
           ref={bioRef}
