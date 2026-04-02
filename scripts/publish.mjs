@@ -18,6 +18,7 @@
 
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -256,8 +257,25 @@ function main() {
   console.log("");
   console.log(`  \x1b[32m✓\x1b[0m Published → src/content/blog/${slug}.mdx`);
   console.log(`  \x1b[32m✓\x1b[0m Images    → public/blog/${slug}/ (${imageFiles.length} files)`);
+
+  // ─── Git commit & push ─────────────────────────────────
   console.log("");
-  console.log(`  Preview: npm run dev → http://localhost:3000/blog/${slug}`);
+  console.log("  \x1b[1m🚀 Deploying...\x1b[0m");
+
+  try {
+    execSync(`git add "src/content/blog/${slug}.mdx" "public/blog/${slug}/"`, { cwd: ROOT, stdio: "pipe" });
+    execSync(`git commit -m "post: ${title}"`, { cwd: ROOT, stdio: "pipe" });
+    console.log(`  \x1b[32m✓\x1b[0m Committed`);
+
+    execSync("git push", { cwd: ROOT, stdio: "pipe" });
+    console.log(`  \x1b[32m✓\x1b[0m Pushed → Vercel 배포 시작`);
+  } catch (err) {
+    console.error(`  \x1b[31m✗\x1b[0m Git 오류: ${err.stderr?.toString().trim() || err.message}`);
+    console.log(`  수동으로 커밋/푸시 해주세요.`);
+  }
+
+  console.log("");
+  console.log(`  \x1b[32m Done!\x1b[0m https://riccilab-dev.vercel.app/blog/${encodeURIComponent(slug)}`);
   console.log("");
 }
 
