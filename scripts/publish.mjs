@@ -223,8 +223,20 @@ function main() {
     (_, alt, filename) => `![${alt}](/blog/${slug}/${filename})`
   );
 
-  // Strip reference-style links at the bottom (optional cleanup)
-  // Keep them for now since they add context
+  // Strip references section at the bottom (after final ---)
+  content = content.replace(/\n---\n\n(\[\[[\d]+\]\][\s\S]*$)/, "");
+
+  // Strip inline reference links [[1]](url) from body text
+  content = content.replace(/\[\[(\d+)\]\]\([^)]*\)/g, "");
+
+  // Clean up inline math $...$ → plain text (remove $ delimiters)
+  content = content.replace(/\$\$([^$]+)\$\$/g, (_, math) => `\`${math.trim()}\``);
+  content = content.replace(/\$([^$\n]+)\$/g, (_, math) => `\`${math.trim()}\``);
+
+  // Clean up stray double spaces from removed references
+  content = content.replace(/  +/g, " ");
+  // Clean up empty parentheses left behind
+  content = content.replace(/ \(\)/g, "");
 
   // Build frontmatter
   const frontmatter = [
