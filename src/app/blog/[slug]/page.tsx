@@ -43,10 +43,10 @@ export default async function BlogPostPage({ params }: Props) {
       <article className="relative min-h-screen pt-32 pb-20 px-6 md:px-16">
         <div className="max-w-3xl mx-auto">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 mb-12 font-mono text-[11px] tracking-[0.15em] text-muted">
-            <span>&gt; blog</span>
-            <span>/</span>
-            <span className="text-black">{slug}</span>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-12 font-mono text-[11px] tracking-[0.15em] text-muted">
+            <span className="shrink-0">&gt; blog</span>
+            <span className="shrink-0">/</span>
+            <span className="text-black break-all">{decodeURIComponent(slug)}</span>
           </div>
 
           {/* Post header */}
