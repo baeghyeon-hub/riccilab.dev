@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { CustomCursor } from "@/components/ui/CustomCursor";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { LenisProvider } from "@/components/layout/LenisProvider";
+import { ScrollHUD } from "@/components/ui/ScrollHUD";
 import "./globals.css";
 
 const inter = Inter({
@@ -22,11 +24,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${inter.variable} h-full`}>
-      <body className="min-h-full bg-bg text-black font-[family-name:var(--font-sans)]">
-        <CustomCursor />
-        <PageTransition />
-        {children}
+    <html lang="ko" className={`${inter.variable} h-full`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-full bg-bg text-black font-[family-name:var(--font-sans)] transition-colors duration-500">
+        <LenisProvider>
+          <CustomCursor />
+          <ScrollHUD />
+          <PageTransition />
+          {children}
+        </LenisProvider>
       </body>
     </html>
   );

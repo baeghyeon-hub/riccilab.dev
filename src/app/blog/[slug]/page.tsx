@@ -2,9 +2,9 @@ import { getPostBySlug, getAllPosts } from "@/lib/blog";
 import { Footer } from "@/components/ui/Footer";
 import { LabBackground } from "@/components/ui/LabBackground";
 import { Navigation } from "@/components/layout/Navigation";
-import { ContentProtect } from "@/components/blog/ContentProtect";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { codeToHtml } from "shiki";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -31,12 +31,14 @@ export default async function BlogPostPage({ params }: Props) {
   const post = getPostBySlug(slug);
   if (!post) notFound();
 
+  const contentHtml = await renderMarkdown(post.content);
+
   return (
     <>
       <LabBackground />
       <Navigation />
       <article className="relative min-h-screen pt-32 pb-20 px-6 md:px-16">
-        <div className="max-w-3xl mx-auto bg-white/90 backdrop-blur-sm rounded-lg px-5 py-10 md:px-10 md:py-14">
+        <div className="max-w-3xl mx-auto">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-12 font-mono text-[11px] tracking-[0.15em] text-muted">
             <span>&gt; blog</span>
@@ -68,11 +70,9 @@ export default async function BlogPostPage({ params }: Props) {
           </header>
 
           {/* Content */}
-          <ContentProtect>
-          <div className="prose prose-neutral max-w-none text-black/90 leading-relaxed text-base md:text-lg [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-black [&_h1]:mt-12 [&_h1]:mb-4 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-black [&_h2]:mt-10 [&_h2]:mb-4 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-black [&_h3]:mt-8 [&_h3]:mb-3 [&_blockquote]:border-l-2 [&_blockquote]:border-black/20 [&_blockquote]:pl-6 [&_blockquote]:italic [&_blockquote]:text-muted [&_a]:text-black [&_a]:underline [&_a]:underline-offset-4 [&_strong]:text-black [&_li]:text-black/80 [&_code]:font-mono [&_code]:text-sm [&_code]:bg-surface [&_code]:px-1.5 [&_code]:py-0.5 [&_.math-block]:my-6 [&_.math-block]:text-center [&_.math-block_code]:text-base [&_.math-block_code]:bg-surface [&_.math-block_code]:px-4 [&_.math-block_code]:py-2 [&_.math-block_code]:rounded [&_.table-wrap]:my-6 [&_.table-wrap]:overflow-x-auto [&_.table-wrap]:-mx-5 [&_.table-wrap]:px-5 [&_table]:min-w-[600px] [&_table]:w-full [&_table]:border-collapse [&_table]:text-sm [&_th]:text-left [&_th]:px-4 [&_th]:py-3 [&_th]:border-b [&_th]:border-black/20 [&_th]:text-black [&_th]:font-semibold [&_th]:whitespace-nowrap [&_td]:px-4 [&_td]:py-3 [&_td]:border-b [&_td]:border-black/10 [&_td]:align-top [&_figure]:my-8 [&_figure_img]:w-full [&_figure_img]:rounded [&_figure_img]:border [&_figure_img]:border-black/10 [&_figcaption]:text-center [&_figcaption]:text-sm [&_figcaption]:text-muted [&_figcaption]:mt-3 [&_figcaption]:font-mono [&_figcaption]:tracking-wide">
-            <div dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content) }} />
+          <div className="prose prose-neutral max-w-none text-black/80 leading-relaxed text-base md:text-lg [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-black [&_h1]:mt-12 [&_h1]:mb-4 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-black [&_h2]:mt-10 [&_h2]:mb-4 [&_blockquote]:border-l-2 [&_blockquote]:border-black/20 [&_blockquote]:pl-6 [&_blockquote]:italic [&_blockquote]:text-muted [&_a]:text-black [&_a]:underline [&_a]:underline-offset-4 [&_strong]:text-black [&_li]:text-black/70 [&_code]:font-mono [&_code]:text-[0.85em] [&_code]:bg-surface [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-sm">
+            <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
           </div>
-          </ContentProtect>
 
           {/* End mark */}
           <div className="mt-16 pt-8 border-t border-border font-mono text-[10px] text-muted tracking-wider">
@@ -85,7 +85,7 @@ export default async function BlogPostPage({ params }: Props) {
   );
 }
 
-function renderMarkdown(content: string): string {
+async function renderMarkdown(content: string): Promise<string> {
   const lines = content.split("\n");
   let html = "";
   let inList = false;
@@ -93,9 +93,41 @@ function renderMarkdown(content: string): string {
   let tableRowIndex = 0;
   let inMath = false;
   let mathContent = "";
+  let inCodeBlock = false;
+  let codeBlockContent: string[] = [];
+  let codeLang = "text";
 
   for (const line of lines) {
     const trimmed = line.trim();
+
+    // Code block (```)
+    if (trimmed.startsWith("```")) {
+      if (!inCodeBlock) {
+        if (inList) { html += "</ul>"; inList = false; }
+        if (inTable) { html += "</tbody></table></div>"; inTable = false; }
+        inCodeBlock = true;
+        codeLang = trimmed.slice(3).trim() || "text";
+        codeBlockContent = [];
+      } else {
+        inCodeBlock = false;
+        try {
+          const highlighted = await codeToHtml(codeBlockContent.join("\n"), {
+            lang: codeLang,
+            theme: "vitesse-dark",
+          });
+          html += `<div class="my-10 rounded-xl overflow-hidden shadow-lg border border-border text-sm leading-relaxed tracking-wide">${highlighted}</div>`;
+        } catch(e) {
+          const escaped = codeBlockContent.join("\n").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+          html += `<pre class="bg-[#121212] text-white/90 p-5 my-10 rounded-xl overflow-x-auto text-sm shadow-lg leading-relaxed tracking-wide"><code>${escaped}</code></pre>`;
+        }
+      }
+      continue;
+    }
+
+    if (inCodeBlock) {
+      codeBlockContent.push(line);
+      continue;
+    }
 
     // Math block ($$...$$)
     if (trimmed.startsWith("$$") && !inMath) {

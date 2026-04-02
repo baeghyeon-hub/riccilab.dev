@@ -17,7 +17,8 @@
       "Bash(find C:/Users/user/riccilab-web/node_modules/next/dist/docs -type f -name *transition* -o -name *view*)",
       "Bash(xargs grep:*)",
       "Bash(npx vercel:*)",
-      "WebFetch(domain:riccilab.dev)"
+      "WebFetch(domain:riccilab.dev)",
+      "Bash(find /c/Users/user/riccilab-web -type f -name *blog* -o -name *post*)"
     ]
   }
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home" },
@@ -15,7 +16,7 @@ export function Navigation() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 px-6 md:px-12 py-5 flex items-center justify-between bg-bg/80 backdrop-blur-sm">
+    <header className="fixed top-0 left-0 w-full z-50 px-6 md:px-12 py-5 flex items-center justify-between bg-bg/80 backdrop-blur-sm transition-colors duration-500">
       <Link
         href="/"
         className="text-black text-sm font-medium tracking-[0.08em] uppercase hover:text-muted transition-colors"
@@ -24,7 +25,7 @@ export function Navigation() {
       </Link>
 
       {/* Desktop nav */}
-      <nav className="hidden md:flex gap-8">
+      <nav className="hidden md:flex items-center gap-8">
         {NAV_ITEMS.map((item) => (
           <Link
             key={item.href}
@@ -36,6 +37,8 @@ export function Navigation() {
             {item.label}
           </Link>
         ))}
+        <div className="w-px h-4 bg-border" />
+        <ThemeToggle />
       </nav>
 
       {/* Mobile hamburger */}
