@@ -67,6 +67,10 @@ export function Navigation() {
                 {item.label}
               </Link>
             ))}
+            <div className="h-px w-10 bg-border my-1" />
+            <div className="flex">
+              <ThemeToggle />
+            </div>
           </nav>
         </div>
       )}

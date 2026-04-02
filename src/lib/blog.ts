@@ -35,7 +35,8 @@ export function getAllPosts(): BlogPost[] {
   return posts.sort((a, b) => (a.date > b.date ? -1 : 1));
 }
 
-export function getPostBySlug(slug: string) {
+export function getPostBySlug(rawSlug: string) {
+  const slug = decodeURIComponent(rawSlug);
   const mdxPath = path.join(BLOG_DIR, `${slug}.mdx`);
   const mdPath = path.join(BLOG_DIR, `${slug}.md`);
   const filePath = fs.existsSync(mdxPath) ? mdxPath : mdPath;
