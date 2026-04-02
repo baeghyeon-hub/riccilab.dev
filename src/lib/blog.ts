@@ -15,10 +15,10 @@ export interface BlogPost {
 export function getAllPosts(): BlogPost[] {
   if (!fs.existsSync(BLOG_DIR)) return [];
 
-  const files = fs.readdirSync(BLOG_DIR).filter((f) => f.endsWith(".mdx"));
+  const files = fs.readdirSync(BLOG_DIR).filter((f) => f.endsWith(".mdx") || f.endsWith(".md"));
 
   const posts = files.map((filename) => {
-    const slug = filename.replace(/\.mdx$/, "");
+    const slug = filename.replace(/\.mdx?$/, "");
     const filePath = path.join(BLOG_DIR, filename);
     const fileContent = fs.readFileSync(filePath, "utf-8");
     const { data } = matter(fileContent);
@@ -36,7 +36,9 @@ export function getAllPosts(): BlogPost[] {
 }
 
 export function getPostBySlug(slug: string) {
-  const filePath = path.join(BLOG_DIR, `${slug}.mdx`);
+  const mdxPath = path.join(BLOG_DIR, `${slug}.mdx`);
+  const mdPath = path.join(BLOG_DIR, `${slug}.md`);
+  const filePath = fs.existsSync(mdxPath) ? mdxPath : mdPath;
   if (!fs.existsSync(filePath)) return null;
 
   const fileContent = fs.readFileSync(filePath, "utf-8");
