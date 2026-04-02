@@ -28,14 +28,46 @@ export function CustomCursor() {
     const pxY = gsap.quickTo(pixels, "y", { duration: 0.15, ease: "power2.out" });
 
     let isHovering = false;
+    let isHidden = false;
 
     const handleMove = (e: MouseEvent) => {
-      dotX(e.clientX);
-      dotY(e.clientY);
-      ringX(e.clientX);
-      ringY(e.clientY);
-      pxX(e.clientX);
-      pxY(e.clientY);
+      // Check if mouse is interacting with native scrollbar or left screen
+      const isOverScrollbar = e.clientX >= document.documentElement.clientWidth;
+
+      if (isOverScrollbar) {
+        if (!isHidden) {
+          gsap.to([dot, ring], { opacity: 0, duration: 0.2 });
+          isHidden = true;
+        }
+      } else {
+        if (isHidden) {
+          // ring starts with opacity 1, or 0 if hovering. We'll simplify and just fade to 1 unless hovering 
+          gsap.to(dot, { opacity: 1, duration: 0.2 });
+          gsap.to(ring, { opacity: isHovering ? 0 : 1, duration: 0.2 });
+          isHidden = false;
+        }
+        dotX(e.clientX);
+        dotY(e.clientY);
+        ringX(e.clientX);
+        ringY(e.clientY);
+        pxX(e.clientX);
+        pxY(e.clientY);
+      }
+    };
+
+    const handleWindowLeave = () => {
+      if (!isHidden) {
+        gsap.to([dot, ring], { opacity: 0, duration: 0.2 });
+        isHidden = true;
+      }
+    };
+
+    const handleWindowEnter = () => {
+      if (isHidden) {
+        gsap.to(dot, { opacity: 1, duration: 0.2 });
+        gsap.to(ring, { opacity: isHovering ? 0 : 1, duration: 0.2 });
+        isHidden = false;
+      }
     };
 
     const handleEnterInteractive = () => {
@@ -72,6 +104,9 @@ export function CustomCursor() {
     };
 
     window.addEventListener("mousemove", handleMove);
+    document.addEventListener("mouseleave", handleWindowLeave);
+    document.addEventListener("mouseenter", handleWindowEnter);
+    
     let targets = attachListeners();
 
     const observer = new MutationObserver(() => {
@@ -85,6 +120,8 @@ export function CustomCursor() {
 
     return () => {
       window.removeEventListener("mousemove", handleMove);
+      document.removeEventListener("mouseleave", handleWindowLeave);
+      document.removeEventListener("mouseenter", handleWindowEnter);
       targets.forEach((el) => {
         el.removeEventListener("mouseenter", handleEnterInteractive);
         el.removeEventListener("mouseleave", handleLeaveInteractive);

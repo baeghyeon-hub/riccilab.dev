@@ -18,7 +18,9 @@
       "Bash(xargs grep:*)",
       "Bash(npx vercel:*)",
       "WebFetch(domain:riccilab.dev)",
-      "Bash(find /c/Users/user/riccilab-web -type f -name *blog* -o -name *post*)"
+      "Bash(find /c/Users/user/riccilab-web -type f -name *blog* -o -name *post*)",
+      "Bash(node scripts/publish.mjs \"posts/동역학적 시스템 학습\")",
+      "Bash(node -e \"const k = require\\(''''katex''''\\); console.log\\(k.renderToString\\(''''x^2''''\\)\\)\")"
     ]
   }
 }
