@@ -33,15 +33,15 @@ export function LabBackground() {
       if (gridRef.current) {
         gsap.fromTo(
           gridRef.current,
-          { opacity: 0.08 },
-          { opacity: 0.35, duration: 4, repeat: -1, yoyo: true, ease: "sine.inOut" }
+          { opacity: 0.03 },
+          { opacity: 0.08, duration: 4, repeat: -1, yoyo: true, ease: "sine.inOut" }
         );
       }
       if (subGridRef.current) {
         gsap.fromTo(
           subGridRef.current,
-          { opacity: 0.04 },
-          { opacity: 0.18, duration: 5, repeat: -1, yoyo: true, ease: "sine.inOut", delay: 1.5 }
+          { opacity: 0.01 },
+          { opacity: 0.04, duration: 5, repeat: -1, yoyo: true, ease: "sine.inOut", delay: 1.5 }
         );
       }
 
@@ -65,9 +65,9 @@ export function LabBackground() {
         // Pulse: fade between light and dark
         gsap.fromTo(
           item,
-          { color: "rgba(0,0,0,0.15)" },
+          { color: "rgba(0,0,0,0.05)" },
           {
-            color: "rgba(0,0,0,0.6)",
+            color: "rgba(0,0,0,0.25)",
             duration: 2 + Math.random() * 2,
             repeat: -1,
             yoyo: true,
@@ -88,7 +88,7 @@ export function LabBackground() {
         ref={gridRef}
         className="absolute inset-0"
         style={{
-          opacity: 0.08,
+          opacity: 0.04,
           backgroundImage:
             "linear-gradient(rgba(0,0,0,1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,1) 1px, transparent 1px)",
           backgroundSize: "60px 60px",
@@ -99,7 +99,7 @@ export function LabBackground() {
         ref={subGridRef}
         className="absolute inset-0"
         style={{
-          opacity: 0.04,
+          opacity: 0.02,
           backgroundImage:
             "linear-gradient(rgba(0,0,0,1) 0.5px, transparent 0.5px), linear-gradient(90deg, rgba(0,0,0,1) 0.5px, transparent 0.5px)",
           backgroundSize: "15px 15px",
