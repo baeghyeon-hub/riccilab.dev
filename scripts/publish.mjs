@@ -229,9 +229,7 @@ function main() {
   // Strip inline reference links [[1]](url) from body text
   content = content.replace(/\[\[(\d+)\]\]\([^)]*\)/g, "");
 
-  // Clean up inline math $...$ → plain text (remove $ delimiters)
-  content = content.replace(/\$\$([^$]+)\$\$/g, (_, math) => `\`${math.trim()}\``);
-  content = content.replace(/\$([^$\n]+)\$/g, (_, math) => `\`${math.trim()}\``);
+  // Keep $...$ and $$...$$ math expressions as-is for KaTeX rendering
 
   // Clean up stray double spaces from removed references
   content = content.replace(/  +/g, " ");

@@ -5,6 +5,7 @@ import { Navigation } from "@/components/layout/Navigation";
 import { ContentProtect } from "@/components/blog/ContentProtect";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import katex from "katex";
 import { codeToHtml } from "shiki";
 
 interface Props {
@@ -36,6 +37,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
       <LabBackground />
       <Navigation />
       <article className="relative min-h-screen pt-32 pb-20 px-6 md:px-16">
@@ -138,7 +140,7 @@ async function renderMarkdown(content: string): Promise<string> {
       if (inTable) { html += "</tbody></table></div>"; inTable = false; }
       const inline = trimmed.slice(2).trim();
       if (inline.endsWith("$$") && inline.length > 2) {
-        html += `<div class="math-block"><code>${escapeHtml(inline.slice(0, -2))}</code></div>`;
+        html += `<div class="math-block">${renderKatex(inline.slice(0, -2), true)}</div>`;
       } else {
         inMath = true;
         mathContent = inline;
@@ -148,7 +150,7 @@ async function renderMarkdown(content: string): Promise<string> {
     if (inMath) {
       if (trimmed.endsWith("$$")) {
         mathContent += (mathContent ? " " : "") + trimmed.slice(0, -2);
-        html += `<div class="math-block"><code>${escapeHtml(mathContent.trim())}</code></div>`;
+        html += `<div class="math-block">${renderKatex(mathContent.trim(), true)}</div>`;
         inMath = false;
         mathContent = "";
       } else {
@@ -220,6 +222,14 @@ async function renderMarkdown(content: string): Promise<string> {
   return html;
 }
 
+function renderKatex(tex: string, displayMode: boolean): string {
+  try {
+    return katex.renderToString(tex, { displayMode, throwOnError: false });
+  } catch {
+    return `<code>${escapeHtml(tex)}</code>`;
+  }
+}
+
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
@@ -228,6 +238,9 @@ function escapeHtml(text: string): string {
 }
 
 function processInline(text: string): string {
+  // Inline math $...$ → KaTeX (process before other inline formatting)
+  text = text.replace(/\$([^$\n]+?)\$/g, (_, math) => renderKatex(math, false));
+
   return text
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
