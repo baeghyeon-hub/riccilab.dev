@@ -153,7 +153,7 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
         ref={counterRef}
         className="text-center"
       >
-        <span className="text-[7rem] md:text-[10rem] font-extralight tracking-tight text-white leading-none font-mono">
+        <span className="text-[clamp(5.5rem,20vw,7rem)] md:text-[10rem] font-extralight tracking-tight text-white leading-none font-mono">
           {display}
         </span>
       </div>

@@ -11,27 +11,26 @@ import { Footer } from "@/components/ui/Footer";
 import type { BlogPost } from "@/lib/blog";
 
 export function PageWrapper({ posts }: { posts: BlogPost[] }) {
-  const [showLoader, setShowLoader] = useState(false);
-  const [loaded, setLoaded] = useState(false);
+  const [stage, setStage] = useState<"checking" | "loader" | "loaded">("checking");
 
   useEffect(() => {
     const visited = sessionStorage.getItem("riccilab-visited");
     if (!visited) {
-      setShowLoader(true);
+      setStage("loader");
     } else {
-      setLoaded(true);
+      setStage("loaded");
     }
   }, []);
 
   const handleComplete = useCallback(() => {
     sessionStorage.setItem("riccilab-visited", "1");
-    setLoaded(true);
+    setStage("loaded");
   }, []);
 
   return (
-    <>
-      {showLoader && <Loader onComplete={handleComplete} />}
-      <div className={loaded ? "" : "overflow-hidden h-screen"}>
+    <div className={stage === "checking" ? "opacity-0" : "opacity-100 transition-opacity duration-300"}>
+      {stage === "loader" && <Loader onComplete={handleComplete} />}
+      <div className={stage === "loaded" ? "" : "overflow-hidden h-screen pointer-events-none"}>
         <Navigation />
         <Hero />
         <Marquee />
@@ -39,6 +38,6 @@ export function PageWrapper({ posts }: { posts: BlogPost[] }) {
         <Notes posts={posts} />
         <Footer />
       </div>
-    </>
+    </div>
   );
 }

@@ -1,7 +1,23 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack)"
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "WebSearch",
+      "WebFetch(domain:www.awwwards.com)",
+      "WebFetch(domain:avantt.fr)",
+      "WebFetch(domain:avantt.displaay.net)",
+      "WebFetch(domain:maxibestof.one)",
+      "WebFetch(domain:orpetron.com)",
+      "WebFetch(domain:www.cssdesignawards.com)",
+      "WebFetch(domain:creative-nights.com)",
+      "WebFetch(domain:sannisahil.com)",
+      "Bash(npx next:*)",
+      "Bash(find C:/Users/user/riccilab-web/node_modules/next/dist/docs -type f -name *transition* -o -name *view*)",
+      "Bash(xargs grep:*)",
+      "Bash(npx vercel:*)",
+      "WebFetch(domain:riccilab.dev)"
     ]
   }
 }

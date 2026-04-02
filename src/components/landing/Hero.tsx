@@ -127,7 +127,7 @@ function MobileTitle() {
     <div className="md:hidden mb-6" data-mobile-title>
       <div
         ref={textRef}
-        className="text-[3.5rem] font-black text-black leading-none tracking-tighter select-none will-change-transform"
+        className="text-[clamp(2.5rem,15vw,3.5rem)] font-black text-black leading-none tracking-tighter select-none will-change-transform"
       >
         RICCILAB
       </div>
