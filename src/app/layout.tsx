@@ -4,6 +4,7 @@ import { CustomCursor } from "@/components/ui/CustomCursor";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { LenisProvider } from "@/components/layout/LenisProvider";
 import { ScrollHUD } from "@/components/ui/ScrollHUD";
+import { ThemeGlitchFilter } from "@/components/ui/ThemeGlitchFilter";
 import "./globals.css";
 
 const inter = Inter({
@@ -41,6 +42,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-bg text-black font-[family-name:var(--font-sans)] transition-colors duration-500">
+        <ThemeGlitchFilter />
         <LenisProvider>
           <CustomCursor />
           <ScrollHUD />

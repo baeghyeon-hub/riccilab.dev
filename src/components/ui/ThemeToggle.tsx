@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { triggerThemeGlitch } from "@/components/ui/ThemeGlitchFilter";
 
 export function ThemeToggle() {
   const [isDark, setIsDark] = useState(false);
@@ -12,15 +13,17 @@ export function ThemeToggle() {
   }, []);
 
   const toggleTheme = () => {
-    if (isDark) {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      setIsDark(false);
-    } else {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-      setIsDark(true);
-    }
+    triggerThemeGlitch(() => {
+      if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+        setIsDark(false);
+      } else {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+        setIsDark(true);
+      }
+    });
   };
 
   if (!mounted) {
