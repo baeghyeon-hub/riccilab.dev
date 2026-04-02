@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${inter.variable} h-full`} suppressHydrationWarning>
+    <html lang="ko" className={`${inter.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -40,7 +40,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full bg-bg text-black font-[family-name:var(--font-sans)] transition-colors duration-500">
+      <body className="min-h-screen bg-bg text-black font-[family-name:var(--font-sans)] transition-colors duration-500">
         <LenisProvider>
           <CustomCursor />
           <ScrollHUD />
