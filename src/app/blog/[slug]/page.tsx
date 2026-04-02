@@ -2,6 +2,7 @@ import { getPostBySlug, getAllPosts } from "@/lib/blog";
 import { Footer } from "@/components/ui/Footer";
 import { LabBackground } from "@/components/ui/LabBackground";
 import { Navigation } from "@/components/layout/Navigation";
+import { ContentProtect } from "@/components/blog/ContentProtect";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -67,9 +68,11 @@ export default async function BlogPostPage({ params }: Props) {
           </header>
 
           {/* Content */}
+          <ContentProtect>
           <div className="prose prose-neutral max-w-none text-black/90 leading-relaxed text-base md:text-lg [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-black [&_h1]:mt-12 [&_h1]:mb-4 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-black [&_h2]:mt-10 [&_h2]:mb-4 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-black [&_h3]:mt-8 [&_h3]:mb-3 [&_blockquote]:border-l-2 [&_blockquote]:border-black/20 [&_blockquote]:pl-6 [&_blockquote]:italic [&_blockquote]:text-muted [&_a]:text-black [&_a]:underline [&_a]:underline-offset-4 [&_strong]:text-black [&_li]:text-black/80 [&_code]:font-mono [&_code]:text-sm [&_code]:bg-surface [&_code]:px-1.5 [&_code]:py-0.5 [&_.math-block]:my-6 [&_.math-block]:text-center [&_.math-block_code]:text-base [&_.math-block_code]:bg-surface [&_.math-block_code]:px-4 [&_.math-block_code]:py-2 [&_.math-block_code]:rounded [&_.table-wrap]:my-6 [&_.table-wrap]:overflow-x-auto [&_.table-wrap]:-mx-5 [&_.table-wrap]:px-5 [&_table]:min-w-[600px] [&_table]:w-full [&_table]:border-collapse [&_table]:text-sm [&_th]:text-left [&_th]:px-4 [&_th]:py-3 [&_th]:border-b [&_th]:border-black/20 [&_th]:text-black [&_th]:font-semibold [&_th]:whitespace-nowrap [&_td]:px-4 [&_td]:py-3 [&_td]:border-b [&_td]:border-black/10 [&_td]:align-top [&_figure]:my-8 [&_figure_img]:w-full [&_figure_img]:rounded [&_figure_img]:border [&_figure_img]:border-black/10 [&_figcaption]:text-center [&_figcaption]:text-sm [&_figcaption]:text-muted [&_figcaption]:mt-3 [&_figcaption]:font-mono [&_figcaption]:tracking-wide">
             <div dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content) }} />
           </div>
+          </ContentProtect>
 
           {/* End mark */}
           <div className="mt-16 pt-8 border-t border-border font-mono text-[10px] text-muted tracking-wider">
