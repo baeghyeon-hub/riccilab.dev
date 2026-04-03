@@ -274,11 +274,18 @@ function main() {
 
   try {
     execSync(`git add "src/content/blog/${slug}.mdx" "public/blog/${slug}/"`, { cwd: ROOT, stdio: "pipe" });
-    execSync(`git commit -m "post: ${title}"`, { cwd: ROOT, stdio: "pipe" });
-    console.log(`  \x1b[32m✓\x1b[0m Committed`);
 
-    execSync("git push", { cwd: ROOT, stdio: "pipe" });
-    console.log(`  \x1b[32m✓\x1b[0m Pushed → Vercel 배포 시작`);
+    // Check if there are staged changes
+    const diff = execSync("git diff --cached --name-only", { cwd: ROOT, encoding: "utf-8" }).trim();
+    if (!diff) {
+      console.log(`  \x1b[33m⚠\x1b[0m 변경사항 없음 — 이미 최신 상태입니다.`);
+    } else {
+      execSync(`git commit -m "post: ${title}"`, { cwd: ROOT, stdio: "pipe" });
+      console.log(`  \x1b[32m✓\x1b[0m Committed`);
+
+      execSync("git push", { cwd: ROOT, stdio: "pipe" });
+      console.log(`  \x1b[32m✓\x1b[0m Pushed → Vercel 배포 시작`);
+    }
   } catch (err) {
     console.error(`  \x1b[31m✗\x1b[0m Git 오류: ${err.stderr?.toString().trim() || err.message}`);
     console.log(`  수동으로 커밋/푸시 해주세요.`);
