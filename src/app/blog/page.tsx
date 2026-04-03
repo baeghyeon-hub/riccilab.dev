@@ -1,5 +1,6 @@
 import { getAllPosts } from "@/lib/blog";
 import { BlogCard } from "@/components/blog/BlogCard";
+import { TagFilter } from "@/components/blog/TagFilter";
 import { Footer } from "@/components/ui/Footer";
 import { LabBackground } from "@/components/ui/LabBackground";
 import { GlitchTitle } from "@/components/ui/GlitchTitle";
@@ -11,8 +12,18 @@ export const metadata: Metadata = {
   description: "코드와 크리에이티브의 기록",
 };
 
-export default async function BlogPage() {
-  const posts = await getAllPosts();
+interface Props {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function BlogPage({ searchParams }: Props) {
+  const { tag } = await searchParams;
+  const activeTag = typeof tag === "string" ? tag : undefined;
+  const allPosts = await getAllPosts();
+  const allTags = [...new Set(allPosts.flatMap((p) => p.tags))].sort();
+  const posts = activeTag
+    ? allPosts.filter((p) => p.tags.includes(activeTag))
+    : allPosts;
 
   return (
     <>
@@ -44,6 +55,9 @@ export default async function BlogPage() {
               <span>FREQ: IRREGULAR</span>
             </div>
           </div>
+
+          {/* Tag filter */}
+          <TagFilter tags={allTags} activeTag={activeTag} />
 
           {/* Post list */}
           {posts.length > 0 ? (

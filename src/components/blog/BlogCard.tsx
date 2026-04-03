@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { gsap } from "@/lib/gsap";
 import type { BlogPost } from "@/lib/blog";
 
@@ -10,6 +11,7 @@ const GLITCH_CHARS = "!@#$%&_░▒▓█▀▄?><";
 export function BlogCard({ post, index = 0 }: { post: BlogPost; index?: number }) {
   const cardRef = useRef<HTMLAnchorElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const router = useRouter();
 
   const glitch = useCallback(() => {
     const el = titleRef.current;
@@ -81,7 +83,13 @@ export function BlogCard({ post, index = 0 }: { post: BlogPost; index?: number }
         {post.tags.map((tag: string) => (
           <span
             key={tag}
-            className="font-mono text-[11px] tracking-wider text-muted"
+            role="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              router.push(`/blog?tag=${tag}`);
+            }}
+            className="font-mono text-[11px] tracking-wider text-muted hover:text-black transition-colors cursor-pointer"
           >
             _{tag.toUpperCase()}
           </span>

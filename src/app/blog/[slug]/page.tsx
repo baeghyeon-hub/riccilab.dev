@@ -55,6 +55,10 @@ import rehypePrettyCode from "rehype-pretty-code";
 import { CyberChart } from "@/components/blog/CyberChart";
 import { CodeBlock } from "@/components/blog/CodeBlock";
 import { articleJsonLd } from "@/lib/jsonld";
+import { GiscusComments } from "@/components/blog/GiscusComments";
+import { TableOfContents } from "@/components/blog/TableOfContents";
+import { extractHeadings } from "@/lib/toc";
+import rehypeSlug from "rehype-slug";
 
 const mdxComponents = {
   CyberChart: (props: any) => {
@@ -82,6 +86,8 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 
+  const headings = extractHeadings(post.content);
+
   return (
     <>
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
@@ -100,7 +106,8 @@ export default async function BlogPostPage({ params }: Props) {
       <LabBackground />
       <Navigation />
       <article className="relative min-h-screen pt-32 pb-20 px-6 md:px-16 select-none">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-5xl mx-auto lg:grid lg:grid-cols-[1fr_200px] lg:gap-12">
+        <div>
           {/* Breadcrumb */}
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-12 font-mono text-[11px] tracking-[0.15em] text-muted">
             <span className="shrink-0">&gt; blog</span>
@@ -140,7 +147,7 @@ export default async function BlogPostPage({ params }: Props) {
               options={{
                 mdxOptions: {
                   remarkPlugins: [remarkGfm, remarkMath],
-                  rehypePlugins: [rehypeKatex, [rehypePrettyCode, { theme: "vitesse-dark" }]]
+                  rehypePlugins: [rehypeSlug, rehypeKatex, [rehypePrettyCode, { theme: "vitesse-dark" }]]
                 }
               }}
             />
@@ -151,6 +158,15 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="mt-16 pt-8 border-t border-border font-mono text-[10px] text-muted tracking-wider">
             EOF — {post.date}
           </div>
+
+          {/* Comments */}
+          <GiscusComments />
+        </div>
+
+        {/* TOC sidebar */}
+        <aside className="hidden lg:block">
+          <TableOfContents headings={headings} />
+        </aside>
         </div>
       </article>
       <Footer />
