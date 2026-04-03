@@ -112,9 +112,13 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
     // Hold for a beat
     tl.to({}, { duration: 0.4 });
 
-    // Phase 4: Invert — black bg becomes white, text becomes black, then slide up
+    // Phase 4: Invert — bg flips to page bg, text flips to page text, then slide up
+    const style = getComputedStyle(document.documentElement);
+    const pageBg = style.getPropertyValue("--bg").trim();
+    const pageText = style.getPropertyValue("--black").trim();
+
     tl.to(containerRef.current, {
-      backgroundColor: "#ffffff",
+      backgroundColor: pageBg,
       duration: 0.4,
       ease: "power2.inOut",
     });
@@ -122,7 +126,7 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
     tl.to(
       [line1Ref.current, line2Ref.current],
       {
-        color: "#111111",
+        color: pageText,
         duration: 0.4,
         ease: "power2.inOut",
       },
@@ -146,14 +150,15 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
+      className="fixed inset-0 z-[100] flex items-center justify-center"
+      style={{ backgroundColor: "var(--black)" }}
     >
       {/* Counter */}
       <div
         ref={counterRef}
         className="text-center"
       >
-        <span className="text-[clamp(5.5rem,20vw,7rem)] md:text-[10rem] font-extralight tracking-tight text-white leading-none font-mono">
+        <span className="text-[clamp(5.5rem,20vw,7rem)] md:text-[10rem] font-extralight tracking-tight leading-none font-mono" style={{ color: "var(--bg)" }}>
           {display}
         </span>
       </div>
@@ -166,7 +171,8 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
         <div className="overflow-hidden">
           <div
             ref={line1Ref}
-            className="text-[clamp(4rem,15vw,14rem)] font-black text-white leading-[0.9] tracking-tighter"
+            className="text-[clamp(4rem,15vw,14rem)] font-black leading-[0.9] tracking-tighter"
+            style={{ color: "var(--bg)" }}
           >
             RICCI
           </div>
@@ -174,7 +180,8 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
         <div className="overflow-hidden">
           <div
             ref={line2Ref}
-            className="text-[clamp(4rem,15vw,14rem)] font-black text-white leading-[0.9] tracking-tighter"
+            className="text-[clamp(4rem,15vw,14rem)] font-black leading-[0.9] tracking-tighter"
+            style={{ color: "var(--bg)" }}
           >
             LAB
           </div>
