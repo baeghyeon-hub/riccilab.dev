@@ -42,7 +42,9 @@ main {
   letter-spacing: 0.02em;
 }
 
-/* Header — terminal prompt style */
+/* ===== TERMINAL PROMPT STYLE ===== */
+
+/* Header — terminal prompt */
 main .gsc-header .gsc-left-header em {
   color: #999999;
   font-style: normal;
@@ -53,7 +55,8 @@ main .gsc-header .gsc-left-header em::before {
   color: #00aa55;
 }
 
-/* Comment box */
+/* ===== COMMENT BOX (input area) ===== */
+
 main .gsc-comment-box {
   border: 1px solid #d0d0d0;
   background-color: #f5f5f5;
@@ -65,6 +68,7 @@ main .gsc-comment-box-tabs {
   border-bottom: 1px solid #d0d0d0;
 }
 
+/* Tab buttons — terminal style */
 main .gsc-comment-box-tabs button {
   font-size: 11px;
   text-transform: uppercase;
@@ -75,36 +79,175 @@ main .gsc-comment-box-tabs button {
 main .gsc-comment-box textarea {
   background-color: #ffffff;
   border: 1px solid #d0d0d0;
-  color: #222222;
+  color: #00aa55;
   font-size: 13px;
   border-radius: 0;
+  caret-color: #00aa55;
 }
 
 main .gsc-comment-box textarea::placeholder {
-  color: #bbbbbb;
+  color: #99ccaa;
+  font-style: normal;
 }
 
 main .gsc-comment-box textarea:focus {
   border-color: #00aa55;
-  box-shadow: 0 0 0 1px rgba(0, 170, 85, 0.2);
+  box-shadow: 0 0 0 1px rgba(0, 170, 85, 0.2), inset 0 0 20px rgba(0, 170, 85, 0.02);
 }
 
 main .gsc-comment-box .gsc-comment-box-bottom {
   border-top-color: #d0d0d0;
 }
 
-/* Comments */
-main .gsc-comments > .gsc-comment {
-  border-color: #e0e0e0;
+/* Reply textarea */
+main .gsc-reply-box textarea {
+  background-color: #ffffff;
+  color: #00aa55;
+  caret-color: #00aa55;
 }
+
+main .gsc-reply-box textarea::placeholder {
+  color: #99ccaa;
+}
+
+/* ===== LOGIN LINK — AUTH style ===== */
+
+main .gsc-comment-box-bottom a[href*="github"] {
+  color: #999999 !important;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none !important;
+}
+
+main .gsc-comment-box-bottom a[href*="github"]:hover {
+  color: #00aa55 !important;
+}
+
+/* ===== SUBMIT BUTTON — EXECUTE style ===== */
+
+main .gsc-comment-box-bottom button[type="submit"],
+main .gsc-reply-box button[type="submit"] {
+  background-color: #f0f0f0 !important;
+  border: 1px solid #00aa55 !important;
+  color: #00aa55 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 16px !important;
+  border-radius: 0 !important;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+main .gsc-comment-box-bottom button[type="submit"]:hover,
+main .gsc-reply-box button[type="submit"]:hover {
+  background-color: #00aa55 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 12px rgba(0, 170, 85, 0.2);
+}
+
+/* ===== COMMENT CONTENT — code/terminal style ===== */
 
 main .gsc-comment .gsc-comment-content {
   background-color: transparent;
 }
 
+/* Comment text — styled like code output */
+main .gsc-comment-content .markdown-body {
+  color: #333333;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+main .gsc-comment-content .markdown-body p {
+  color: #333333;
+}
+
+main .gsc-comment-content .markdown-body strong {
+  color: #c9253d;
+  font-weight: 600;
+}
+
+main .gsc-comment-content .markdown-body em {
+  color: #8b3daa;
+  font-style: italic;
+}
+
+main .gsc-comment-content .markdown-body code {
+  background-color: #f0f0f0;
+  border: 1px solid #d0d0d0;
+  color: #b07d2b;
+  padding: 2px 6px;
+  border-radius: 0;
+  font-size: 12px;
+}
+
+main .gsc-comment-content .markdown-body pre {
+  background-color: #f5f5f5 !important;
+  border: 1px solid #d0d0d0;
+  border-radius: 0 !important;
+}
+
+main .gsc-comment-content .markdown-body pre code {
+  color: #333333;
+  border: none;
+  padding: 0;
+}
+
+main .gsc-comment-content .markdown-body a {
+  color: #2563eb;
+}
+
+main .gsc-comment-content .markdown-body a:hover {
+  color: #1d4ed8;
+}
+
+main .gsc-comment-content .markdown-body blockquote {
+  border-left-color: #00aa55;
+  color: #777777;
+}
+
+main .gsc-comment-content .markdown-body h1,
+main .gsc-comment-content .markdown-body h2,
+main .gsc-comment-content .markdown-body h3 {
+  color: #111111;
+  border-bottom-color: #d0d0d0;
+}
+
+main .gsc-comment-content .markdown-body ul,
+main .gsc-comment-content .markdown-body ol {
+  color: #333333;
+}
+
+main .gsc-comment-content .markdown-body hr {
+  background-color: #d0d0d0;
+}
+
+/* ===== COMMENT HEADER ===== */
+
 main .gsc-comment .gsc-comment-header {
   background-color: #f5f5f5;
   border-bottom: 1px solid #e0e0e0;
+}
+
+/* Author name — highlight */
+main .gsc-comment-header .gsc-comment-author a {
+  color: #2563eb !important;
+}
+
+/* Timestamp */
+main .gsc-comment-header a.link-secondary {
+  color: #999999 !important;
+  font-size: 11px;
+}
+
+/* Author badge (Owner/Maintainer) */
+main .gsc-comment-header .Label {
+  border-radius: 0 !important;
+  font-size: 10px !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 main .gsc-comment .gsc-comment-header .gsc-comment-author-avatar {
@@ -122,7 +265,8 @@ main .gsc-reply-box {
   border-radius: 0;
 }
 
-/* Links */
+/* ===== LINKS ===== */
+
 main a {
   color: #00aa55;
   text-decoration: none;
@@ -133,7 +277,8 @@ main a:hover {
   text-decoration: underline;
 }
 
-/* Buttons — sharp corners */
+/* ===== BUTTONS ===== */
+
 main button,
 main .btn {
   border-radius: 0 !important;
@@ -142,7 +287,8 @@ main .btn {
   letter-spacing: 0.08em;
 }
 
-/* Reactions */
+/* ===== REACTIONS ===== */
+
 main .gsc-reactions-count {
   color: #999999;
   font-size: 11px;
@@ -176,12 +322,14 @@ main .gsc-social-reaction-summary-item.has-reacted {
   color: #00aa55;
 }
 
-/* Timeline */
+/* ===== TIMELINE ===== */
+
 main .gsc-timeline {
   border-left-color: #e0e0e0;
 }
 
-/* Login button */
+/* ===== MISC ===== */
+
 main .gsc-comment-box-bottom a {
   border-radius: 0 !important;
 }
@@ -191,4 +339,98 @@ main img[alt="avatar"],
 main .avatar,
 main .gsc-comment-author-avatar img {
   border-radius: 0 !important;
+}
+
+/* Emojis — ensure visibility */
+main g-emoji,
+main .emoji,
+main [data-emoji] {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', sans-serif !important;
+  font-style: normal;
+  filter: none;
+  -webkit-text-stroke: 0;
+  color: initial;
+  background: none;
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+main .gsc-comment-content g-emoji,
+main .gsc-comment-content .emoji {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', sans-serif !important;
+  color: initial;
+  filter: none;
+}
+
+/* ===== ACTION MENU ===== */
+
+main details > summary,
+main .gsc-comment-header summary,
+main .gsc-comment summary {
+  color: #777777 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+main details > summary:hover,
+main .gsc-comment-header summary:hover {
+  color: #00aa55 !important;
+}
+
+main details summary svg,
+main summary svg {
+  fill: #777777 !important;
+  color: #777777 !important;
+  opacity: 1 !important;
+}
+
+main details summary:hover svg,
+main summary:hover svg {
+  fill: #00aa55 !important;
+  color: #00aa55 !important;
+}
+
+/* Dropdown menus */
+main details[open] > .SelectMenu,
+main details[open] > details-menu,
+main details[open] > .dropdown-menu,
+main .select-menu-modal,
+main [role="menu"] {
+  background-color: #f5f5f5 !important;
+  border: 1px solid #d0d0d0 !important;
+  border-radius: 0 !important;
+  color: #333333;
+}
+
+main .SelectMenu-item,
+main .select-menu-item,
+main [role="menuitem"],
+main [role="menuitemradio"],
+main details-menu-item {
+  color: #333333 !important;
+  border-color: #d0d0d0 !important;
+}
+
+main .SelectMenu-item:hover,
+main .select-menu-item:hover,
+main [role="menuitem"]:hover,
+main [role="menuitemradio"]:hover,
+main details-menu-item:hover {
+  background-color: #e8e8e8 !important;
+  color: #00aa55 !important;
+}
+
+/* ===== SORT BUTTONS (Oldest/Newest/Top) ===== */
+
+main .gsc-header .gsc-right-header button {
+  font-size: 10px !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ===== REPLY COUNT ===== */
+
+main .gsc-replies-count {
+  color: #999999;
+  font-size: 11px;
 }

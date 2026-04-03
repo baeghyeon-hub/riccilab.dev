@@ -42,7 +42,9 @@ main {
   letter-spacing: 0.02em;
 }
 
-/* Header — terminal prompt style */
+/* ===== TERMINAL PROMPT STYLE ===== */
+
+/* Header — terminal prompt */
 main .gsc-header .gsc-left-header em {
   color: #555555;
   font-style: normal;
@@ -53,7 +55,8 @@ main .gsc-header .gsc-left-header em::before {
   color: #33cc77;
 }
 
-/* Comment box */
+/* ===== COMMENT BOX (input area) ===== */
+
 main .gsc-comment-box {
   border: 1px solid #2a2a2a;
   background-color: #0e0e0e;
@@ -65,6 +68,7 @@ main .gsc-comment-box-tabs {
   border-bottom: 1px solid #2a2a2a;
 }
 
+/* Tab buttons — terminal style */
 main .gsc-comment-box-tabs button {
   font-size: 11px;
   text-transform: uppercase;
@@ -75,36 +79,175 @@ main .gsc-comment-box-tabs button {
 main .gsc-comment-box textarea {
   background-color: #080808;
   border: 1px solid #2a2a2a;
-  color: #c0c0c0;
+  color: #33cc77;
   font-size: 13px;
   border-radius: 0;
+  caret-color: #33cc77;
 }
 
 main .gsc-comment-box textarea::placeholder {
-  color: #444444;
+  color: #3a5a45;
+  font-style: normal;
 }
 
 main .gsc-comment-box textarea:focus {
   border-color: #33cc77;
-  box-shadow: 0 0 0 1px rgba(51, 204, 119, 0.2);
+  box-shadow: 0 0 0 1px rgba(51, 204, 119, 0.2), inset 0 0 20px rgba(51, 204, 119, 0.03);
 }
 
 main .gsc-comment-box .gsc-comment-box-bottom {
   border-top-color: #2a2a2a;
 }
 
-/* Comments */
-main .gsc-comments > .gsc-comment {
-  border-color: #1a1a1a;
+/* Reply textarea */
+main .gsc-reply-box textarea {
+  background-color: #080808;
+  color: #33cc77;
+  caret-color: #33cc77;
 }
+
+main .gsc-reply-box textarea::placeholder {
+  color: #3a5a45;
+}
+
+/* ===== LOGIN LINK — AUTH style ===== */
+
+main .gsc-comment-box-bottom a[href*="github"] {
+  color: #666666 !important;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none !important;
+}
+
+main .gsc-comment-box-bottom a[href*="github"]:hover {
+  color: #33cc77 !important;
+}
+
+/* ===== SUBMIT BUTTON — EXECUTE style ===== */
+
+main .gsc-comment-box-bottom button[type="submit"],
+main .gsc-reply-box button[type="submit"] {
+  background-color: #141414 !important;
+  border: 1px solid #33cc77 !important;
+  color: #33cc77 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 16px !important;
+  border-radius: 0 !important;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+main .gsc-comment-box-bottom button[type="submit"]:hover,
+main .gsc-reply-box button[type="submit"]:hover {
+  background-color: #33cc77 !important;
+  color: #000000 !important;
+  box-shadow: 0 0 12px rgba(51, 204, 119, 0.3);
+}
+
+/* ===== COMMENT CONTENT — code/terminal style ===== */
 
 main .gsc-comment .gsc-comment-content {
   background-color: transparent;
 }
 
+/* Comment text — styled like code output */
+main .gsc-comment-content .markdown-body {
+  color: #c0c0c0;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+main .gsc-comment-content .markdown-body p {
+  color: #c0c0c0;
+}
+
+main .gsc-comment-content .markdown-body strong {
+  color: #e06c75;
+  font-weight: 600;
+}
+
+main .gsc-comment-content .markdown-body em {
+  color: #c678dd;
+  font-style: italic;
+}
+
+main .gsc-comment-content .markdown-body code {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  color: #e5c07b;
+  padding: 2px 6px;
+  border-radius: 0;
+  font-size: 12px;
+}
+
+main .gsc-comment-content .markdown-body pre {
+  background-color: #0a0a0a !important;
+  border: 1px solid #2a2a2a;
+  border-radius: 0 !important;
+}
+
+main .gsc-comment-content .markdown-body pre code {
+  color: #abb2bf;
+  border: none;
+  padding: 0;
+}
+
+main .gsc-comment-content .markdown-body a {
+  color: #61afef;
+}
+
+main .gsc-comment-content .markdown-body a:hover {
+  color: #8cc8ff;
+}
+
+main .gsc-comment-content .markdown-body blockquote {
+  border-left-color: #33cc77;
+  color: #666666;
+}
+
+main .gsc-comment-content .markdown-body h1,
+main .gsc-comment-content .markdown-body h2,
+main .gsc-comment-content .markdown-body h3 {
+  color: #e0e0e0;
+  border-bottom-color: #2a2a2a;
+}
+
+main .gsc-comment-content .markdown-body ul,
+main .gsc-comment-content .markdown-body ol {
+  color: #c0c0c0;
+}
+
+main .gsc-comment-content .markdown-body hr {
+  background-color: #2a2a2a;
+}
+
+/* ===== COMMENT HEADER ===== */
+
 main .gsc-comment .gsc-comment-header {
   background-color: #0e0e0e;
   border-bottom: 1px solid #1a1a1a;
+}
+
+/* Author name — highlight */
+main .gsc-comment-header .gsc-comment-author a {
+  color: #61afef !important;
+}
+
+/* Timestamp */
+main .gsc-comment-header a.link-secondary {
+  color: #555555 !important;
+  font-size: 11px;
+}
+
+/* Author badge (Owner/Maintainer) */
+main .gsc-comment-header .Label {
+  border-radius: 0 !important;
+  font-size: 10px !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 main .gsc-comment .gsc-comment-header .gsc-comment-author-avatar {
@@ -122,7 +265,8 @@ main .gsc-reply-box {
   border-radius: 0;
 }
 
-/* Links */
+/* ===== LINKS ===== */
+
 main a {
   color: #33cc77;
   text-decoration: none;
@@ -133,7 +277,8 @@ main a:hover {
   text-decoration: underline;
 }
 
-/* Buttons — sharp corners */
+/* ===== BUTTONS ===== */
+
 main button,
 main .btn {
   border-radius: 0 !important;
@@ -142,7 +287,8 @@ main .btn {
   letter-spacing: 0.08em;
 }
 
-/* Reactions */
+/* ===== REACTIONS ===== */
+
 main .gsc-reactions-count {
   color: #555555;
   font-size: 11px;
@@ -176,17 +322,18 @@ main .gsc-social-reaction-summary-item.has-reacted {
   color: #33cc77;
 }
 
-/* Timeline */
+/* ===== TIMELINE ===== */
+
 main .gsc-timeline {
   border-left-color: #1a1a1a;
 }
 
-/* Loading */
+/* ===== MISC ===== */
+
 main .gsc-loading-image {
   filter: invert(1);
 }
 
-/* Login button */
 main .gsc-comment-box-bottom a {
   border-radius: 0 !important;
 }
@@ -198,7 +345,7 @@ main .gsc-comment-author-avatar img {
   border-radius: 0 !important;
 }
 
-/* Emojis — ensure visibility on dark background */
+/* Emojis — ensure visibility */
 main g-emoji,
 main .emoji,
 main [data-emoji] {
@@ -219,7 +366,8 @@ main .gsc-comment-content .emoji {
   filter: none;
 }
 
-/* Comment action menu (edit/delete) — broad selectors for giscus */
+/* ===== ACTION MENU ===== */
+
 main details > summary,
 main .gsc-comment-header summary,
 main .gsc-comment summary {
@@ -246,7 +394,7 @@ main summary:hover svg {
   color: #33cc77 !important;
 }
 
-/* Dropdown/overlay menus */
+/* Dropdown menus */
 main details[open] > .SelectMenu,
 main details[open] > details-menu,
 main details[open] > .dropdown-menu,
@@ -274,4 +422,19 @@ main [role="menuitemradio"]:hover,
 main details-menu-item:hover {
   background-color: #1e1e1e !important;
   color: #33cc77 !important;
+}
+
+/* ===== SORT BUTTONS (Oldest/Newest/Top) ===== */
+
+main .gsc-header .gsc-right-header button {
+  font-size: 10px !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ===== REPLY COUNT ===== */
+
+main .gsc-replies-count {
+  color: #555555;
+  font-size: 11px;
 }
