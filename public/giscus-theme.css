@@ -1,0 +1,199 @@
+/*! Custom giscus theme for RICCILAB — terminal aesthetic (dark) */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+main {
+  --color-canvas-default: #0a0a0a;
+  --color-canvas-subtle: #141414;
+  --color-canvas-inset: #080808;
+  --color-border-default: #2a2a2a;
+  --color-border-muted: #222222;
+  --color-neutral-muted: rgba(255, 255, 255, 0.06);
+  --color-accent-fg: #33cc77;
+  --color-accent-emphasis: #33cc77;
+  --color-accent-muted: rgba(51, 204, 119, 0.3);
+  --color-accent-subtle: rgba(51, 204, 119, 0.08);
+  --color-fg-default: #c0c0c0;
+  --color-fg-muted: #666666;
+  --color-fg-subtle: #555555;
+  --color-btn-text: #c0c0c0;
+  --color-btn-bg: #141414;
+  --color-btn-border: #2a2a2a;
+  --color-btn-hover-bg: #1e1e1e;
+  --color-btn-hover-border: #33cc77;
+  --color-btn-active-bg: #222222;
+  --color-btn-primary-text: #000000;
+  --color-btn-primary-bg: #33cc77;
+  --color-btn-primary-border: #33cc77;
+  --color-btn-primary-hover-bg: #2ab866;
+  --color-btn-primary-hover-border: #2ab866;
+  --color-social-reaction-bg-hover: rgba(51, 204, 119, 0.12);
+  --color-social-reaction-bg-reacted-hover: rgba(51, 204, 119, 0.2);
+}
+
+/* Global terminal font */
+main,
+main * {
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'SF Mono', Consolas, monospace !important;
+}
+
+main {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+/* Header — terminal prompt style */
+main .gsc-header .gsc-left-header em {
+  color: #555555;
+  font-style: normal;
+}
+
+main .gsc-header .gsc-left-header em::before {
+  content: '> ';
+  color: #33cc77;
+}
+
+/* Comment box */
+main .gsc-comment-box {
+  border: 1px solid #2a2a2a;
+  background-color: #0e0e0e;
+  border-radius: 0;
+}
+
+main .gsc-comment-box-tabs {
+  background-color: #0a0a0a;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+main .gsc-comment-box-tabs button {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Textarea */
+main .gsc-comment-box textarea {
+  background-color: #080808;
+  border: 1px solid #2a2a2a;
+  color: #c0c0c0;
+  font-size: 13px;
+  border-radius: 0;
+}
+
+main .gsc-comment-box textarea::placeholder {
+  color: #444444;
+}
+
+main .gsc-comment-box textarea:focus {
+  border-color: #33cc77;
+  box-shadow: 0 0 0 1px rgba(51, 204, 119, 0.2);
+}
+
+main .gsc-comment-box .gsc-comment-box-bottom {
+  border-top-color: #2a2a2a;
+}
+
+/* Comments */
+main .gsc-comments > .gsc-comment {
+  border-color: #1a1a1a;
+}
+
+main .gsc-comment .gsc-comment-content {
+  background-color: transparent;
+}
+
+main .gsc-comment .gsc-comment-header {
+  background-color: #0e0e0e;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+main .gsc-comment .gsc-comment-header .gsc-comment-author-avatar {
+  border-radius: 0;
+}
+
+main .gsc-reply .gsc-reply-content {
+  border-top-color: #1a1a1a;
+}
+
+/* Reply box */
+main .gsc-reply-box {
+  border: 1px solid #2a2a2a;
+  background-color: #0e0e0e;
+  border-radius: 0;
+}
+
+/* Links */
+main a {
+  color: #33cc77;
+  text-decoration: none;
+}
+
+main a:hover {
+  color: #55eeaa;
+  text-decoration: underline;
+}
+
+/* Buttons — sharp corners */
+main button,
+main .btn {
+  border-radius: 0 !important;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Reactions */
+main .gsc-reactions-count {
+  color: #555555;
+  font-size: 11px;
+}
+
+main .gsc-direct-reaction-button {
+  border-color: #2a2a2a;
+  background-color: #0e0e0e;
+  border-radius: 0 !important;
+}
+
+main .gsc-direct-reaction-button:hover {
+  border-color: #33cc77;
+  background-color: rgba(51, 204, 119, 0.08);
+}
+
+main .gsc-social-reaction-summary-item {
+  border-color: #2a2a2a;
+  background-color: #0e0e0e;
+  color: #666666;
+  border-radius: 0 !important;
+}
+
+main .gsc-social-reaction-summary-item:hover {
+  border-color: #33cc77;
+}
+
+main .gsc-social-reaction-summary-item.has-reacted {
+  border-color: #33cc77;
+  background-color: rgba(51, 204, 119, 0.08);
+  color: #33cc77;
+}
+
+/* Timeline */
+main .gsc-timeline {
+  border-left-color: #1a1a1a;
+}
+
+/* Loading */
+main .gsc-loading-image {
+  filter: invert(1);
+}
+
+/* Login button */
+main .gsc-comment-box-bottom a {
+  border-radius: 0 !important;
+}
+
+/* Avatars — square */
+main img[alt="avatar"],
+main .avatar,
+main .gsc-comment-author-avatar img {
+  border-radius: 0 !important;
+}

@@ -3,16 +3,20 @@
 import Giscus from "@giscus/react";
 import { useEffect, useState } from "react";
 
+const THEME_LIGHT = `${typeof window !== "undefined" ? window.location.origin : ""}/giscus-theme-light.css`;
+const THEME_DARK = `${typeof window !== "undefined" ? window.location.origin : ""}/giscus-theme.css`;
+
 export function GiscusComments() {
-  const [theme, setTheme] = useState<"light" | "dark_dimmed">("light");
+  const [theme, setTheme] = useState("");
 
   useEffect(() => {
+    const origin = window.location.origin;
     const isDark = document.documentElement.classList.contains("dark");
-    setTheme(isDark ? "dark_dimmed" : "light");
+    setTheme(isDark ? `${origin}/giscus-theme.css` : `${origin}/giscus-theme-light.css`);
 
     const observer = new MutationObserver(() => {
       const dark = document.documentElement.classList.contains("dark");
-      setTheme(dark ? "dark_dimmed" : "light");
+      setTheme(dark ? `${origin}/giscus-theme.css` : `${origin}/giscus-theme-light.css`);
     });
 
     observer.observe(document.documentElement, {

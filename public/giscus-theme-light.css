@@ -1,0 +1,194 @@
+/*! Custom giscus theme for RICCILAB — terminal aesthetic (light) */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+main {
+  --color-canvas-default: #fafafa;
+  --color-canvas-subtle: #f0f0f0;
+  --color-canvas-inset: #f5f5f5;
+  --color-border-default: #d0d0d0;
+  --color-border-muted: #e0e0e0;
+  --color-neutral-muted: rgba(0, 0, 0, 0.05);
+  --color-accent-fg: #00aa55;
+  --color-accent-emphasis: #00aa55;
+  --color-accent-muted: rgba(0, 170, 85, 0.3);
+  --color-accent-subtle: rgba(0, 170, 85, 0.06);
+  --color-fg-default: #222222;
+  --color-fg-muted: #777777;
+  --color-fg-subtle: #999999;
+  --color-btn-text: #222222;
+  --color-btn-bg: #f0f0f0;
+  --color-btn-border: #d0d0d0;
+  --color-btn-hover-bg: #e8e8e8;
+  --color-btn-hover-border: #00aa55;
+  --color-btn-active-bg: #e0e0e0;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #00aa55;
+  --color-btn-primary-border: #00aa55;
+  --color-btn-primary-hover-bg: #009944;
+  --color-btn-primary-hover-border: #009944;
+  --color-social-reaction-bg-hover: rgba(0, 170, 85, 0.08);
+  --color-social-reaction-bg-reacted-hover: rgba(0, 170, 85, 0.15);
+}
+
+/* Global terminal font */
+main,
+main * {
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'SF Mono', Consolas, monospace !important;
+}
+
+main {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+/* Header — terminal prompt style */
+main .gsc-header .gsc-left-header em {
+  color: #999999;
+  font-style: normal;
+}
+
+main .gsc-header .gsc-left-header em::before {
+  content: '> ';
+  color: #00aa55;
+}
+
+/* Comment box */
+main .gsc-comment-box {
+  border: 1px solid #d0d0d0;
+  background-color: #f5f5f5;
+  border-radius: 0;
+}
+
+main .gsc-comment-box-tabs {
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #d0d0d0;
+}
+
+main .gsc-comment-box-tabs button {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Textarea */
+main .gsc-comment-box textarea {
+  background-color: #ffffff;
+  border: 1px solid #d0d0d0;
+  color: #222222;
+  font-size: 13px;
+  border-radius: 0;
+}
+
+main .gsc-comment-box textarea::placeholder {
+  color: #bbbbbb;
+}
+
+main .gsc-comment-box textarea:focus {
+  border-color: #00aa55;
+  box-shadow: 0 0 0 1px rgba(0, 170, 85, 0.2);
+}
+
+main .gsc-comment-box .gsc-comment-box-bottom {
+  border-top-color: #d0d0d0;
+}
+
+/* Comments */
+main .gsc-comments > .gsc-comment {
+  border-color: #e0e0e0;
+}
+
+main .gsc-comment .gsc-comment-content {
+  background-color: transparent;
+}
+
+main .gsc-comment .gsc-comment-header {
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+main .gsc-comment .gsc-comment-header .gsc-comment-author-avatar {
+  border-radius: 0;
+}
+
+main .gsc-reply .gsc-reply-content {
+  border-top-color: #e0e0e0;
+}
+
+/* Reply box */
+main .gsc-reply-box {
+  border: 1px solid #d0d0d0;
+  background-color: #f5f5f5;
+  border-radius: 0;
+}
+
+/* Links */
+main a {
+  color: #00aa55;
+  text-decoration: none;
+}
+
+main a:hover {
+  color: #008844;
+  text-decoration: underline;
+}
+
+/* Buttons — sharp corners */
+main button,
+main .btn {
+  border-radius: 0 !important;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Reactions */
+main .gsc-reactions-count {
+  color: #999999;
+  font-size: 11px;
+}
+
+main .gsc-direct-reaction-button {
+  border-color: #d0d0d0;
+  background-color: #f5f5f5;
+  border-radius: 0 !important;
+}
+
+main .gsc-direct-reaction-button:hover {
+  border-color: #00aa55;
+  background-color: rgba(0, 170, 85, 0.06);
+}
+
+main .gsc-social-reaction-summary-item {
+  border-color: #d0d0d0;
+  background-color: #f5f5f5;
+  color: #777777;
+  border-radius: 0 !important;
+}
+
+main .gsc-social-reaction-summary-item:hover {
+  border-color: #00aa55;
+}
+
+main .gsc-social-reaction-summary-item.has-reacted {
+  border-color: #00aa55;
+  background-color: rgba(0, 170, 85, 0.06);
+  color: #00aa55;
+}
+
+/* Timeline */
+main .gsc-timeline {
+  border-left-color: #e0e0e0;
+}
+
+/* Login button */
+main .gsc-comment-box-bottom a {
+  border-radius: 0 !important;
+}
+
+/* Avatars — square */
+main img[alt="avatar"],
+main .avatar,
+main .gsc-comment-author-avatar img {
+  border-radius: 0 !important;
+}
