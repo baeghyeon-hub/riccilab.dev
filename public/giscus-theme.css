@@ -215,3 +215,62 @@ main .gsc-comment-content .emoji {
   color: initial;
   filter: none;
 }
+
+/* Comment action menu (edit/delete) */
+main .gsc-comment-header details > summary {
+  color: #666666;
+}
+
+main .gsc-comment-header details > summary:hover {
+  color: #33cc77;
+}
+
+main .gsc-comment-header details .SelectMenu {
+  background-color: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 0;
+}
+
+main .gsc-comment-header details .SelectMenu-item {
+  color: #c0c0c0;
+  border-bottom-color: #2a2a2a;
+}
+
+main .gsc-comment-header details .SelectMenu-item:hover {
+  background-color: #1e1e1e;
+  color: #33cc77;
+}
+
+main details summary svg,
+main .gsc-comment-header details summary svg {
+  fill: #666666;
+  color: #666666;
+}
+
+main details summary:hover svg,
+main .gsc-comment-header details summary:hover svg {
+  fill: #33cc77;
+  color: #33cc77;
+}
+
+/* Dropdown menus */
+main details-menu,
+main .select-menu-modal,
+main .details-overlay details[open] > summary::before {
+  background-color: #141414;
+  border-color: #2a2a2a;
+  border-radius: 0 !important;
+}
+
+main .select-menu-item,
+main details-menu-item,
+main [role="menuitem"] {
+  color: #c0c0c0;
+}
+
+main .select-menu-item:hover,
+main details-menu-item:hover,
+main [role="menuitem"]:hover {
+  background-color: #1e1e1e;
+  color: #33cc77;
+}
