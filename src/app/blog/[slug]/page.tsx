@@ -69,7 +69,7 @@ export default async function BlogPostPage({ params }: Props) {
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
       <LabBackground />
       <Navigation />
-      <article className="relative min-h-screen pt-32 pb-20 px-6 md:px-16">
+      <article className="relative min-h-screen pt-32 pb-20 px-6 md:px-16 select-none">
         <div className="max-w-3xl mx-auto">
           {/* Breadcrumb */}
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-12 font-mono text-[11px] tracking-[0.15em] text-muted">
