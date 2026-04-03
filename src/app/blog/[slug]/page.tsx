@@ -28,12 +28,39 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+import { MDXRemote } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import rehypePrettyCode from "rehype-pretty-code";
+import { CyberChart } from "@/components/blog/CyberChart";
+
+const mdxComponents = {
+  code: ({ className, children, ...props }: any) => {
+    const match = /language-(\w+)/.exec(className || "");
+    const lang = match ? match[1] : "";
+    if (lang === "chart" || lang === "cyberchart") {
+      return <CyberChart dataString={String(children)} type="stepAfter" />;
+    }
+    return <code className={className} {...props}>{children}</code>;
+  },
+  img: (props: any) => (
+    <figure className="my-10">
+      <img {...props} className="w-full rounded border border-black/10" />
+      {props.alt && <figcaption className="text-center text-sm text-muted mt-3 font-mono tracking-wide">{props.alt}</figcaption>}
+    </figure>
+  ),
+  table: (props: any) => (
+    <div className="table-wrap my-8 overflow-x-auto -mx-5 px-5">
+      <table className="min-w-[600px] w-full border-collapse text-sm" {...props} />
+    </div>
+  )
+};
+
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) notFound();
-
-  const contentHtml = await renderMarkdown(post.content);
 
   return (
     <>
@@ -74,8 +101,17 @@ export default async function BlogPostPage({ params }: Props) {
 
           {/* Content */}
           <ContentProtect>
-          <div className="prose prose-neutral max-w-none text-black/90 leading-[1.85] text-base md:text-lg [&_p]:mb-5 [&_p]:mt-0 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-black [&_h1]:mt-14 [&_h1]:mb-6 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-black [&_h2]:mt-14 [&_h2]:mb-6 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-black [&_h3]:mt-10 [&_h3]:mb-4 [&_blockquote]:border-l-2 [&_blockquote]:border-black/20 [&_blockquote]:pl-6 [&_blockquote]:my-8 [&_blockquote]:italic [&_blockquote]:text-muted [&_a]:text-black [&_a]:underline [&_a]:underline-offset-4 [&_strong]:text-black [&_ul]:my-5 [&_ul]:space-y-2 [&_li]:text-black/80 [&_code]:font-mono [&_code]:text-[0.85em] [&_code]:bg-surface [&_code]:px-1.5 [&_code]:py-0.5 [&_.math-block]:my-8 [&_.math-block]:text-center [&_.table-wrap]:my-8 [&_.table-wrap]:overflow-x-auto [&_.table-wrap]:-mx-5 [&_.table-wrap]:px-5 [&_table]:min-w-[600px] [&_table]:w-full [&_table]:border-collapse [&_table]:text-sm [&_th]:text-left [&_th]:px-4 [&_th]:py-3 [&_th]:border-b [&_th]:border-black/20 [&_th]:text-black [&_th]:font-semibold [&_th]:whitespace-nowrap [&_td]:px-4 [&_td]:py-3 [&_td]:border-b [&_td]:border-black/10 [&_td]:align-top [&_figure]:my-10 [&_figure_img]:w-full [&_figure_img]:rounded [&_figure_img]:border [&_figure_img]:border-black/10 [&_figcaption]:text-center [&_figcaption]:text-sm [&_figcaption]:text-muted [&_figcaption]:mt-3 [&_figcaption]:font-mono [&_figcaption]:tracking-wide">
-            <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+          <div className="prose prose-neutral max-w-none text-black/90 leading-[1.85] text-base md:text-lg [&_p]:mb-5 [&_p]:mt-0 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-black [&_h1]:mt-14 [&_h1]:mb-6 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-black [&_h2]:mt-14 [&_h2]:mb-6 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-black [&_h3]:mt-10 [&_h3]:mb-4 [&_blockquote]:border-l-2 [&_blockquote]:border-black/20 [&_blockquote]:pl-6 [&_blockquote]:my-8 [&_blockquote]:italic [&_blockquote]:text-muted [&_a]:text-black [&_a]:underline [&_a]:underline-offset-4 [&_strong]:text-black [&_ul]:my-5 [&_ul]:space-y-2 [&_li]:text-black/80 [&_code]:font-mono [&_code]:text-[0.85em] [&_code]:bg-surface [&_code]:px-1.5 [&_code]:py-0.5 [&_.math-block]:my-8 [&_.math-block]:text-center [&_.table-wrap]:my-8 [&_.table-wrap]:overflow-x-auto [&_.table-wrap]:-mx-5 [&_.table-wrap]:px-5 [&_table]:min-w-[600px] [&_table]:w-full [&_table]:border-collapse [&_table]:text-sm [&_th]:text-left [&_th]:px-4 [&_th]:py-3 [&_th]:border-b [&_th]:border-black/20 [&_th]:text-black [&_th]:font-semibold [&_th]:whitespace-nowrap [&_td]:px-4 [&_td]:py-3 [&_td]:border-b [&_td]:border-black/10 [&_td]:align-top [&_figure]:my-10 [&_figure_img]:w-full [&_figure_img]:rounded [&_figure_img]:border [&_figure_img]:border-black/10 [&_figcaption]:text-center [&_figcaption]:text-sm [&_figcaption]:text-muted [&_figcaption]:mt-3 [&_figcaption]:font-mono [&_figcaption]:tracking-wide [&_pre]:bg-[#121212] [&_pre]:text-white/90 [&_pre]:p-5 [&_pre]:my-10 [&_pre]:rounded-xl [&_pre]:overflow-x-auto [&_pre]:text-sm [&_pre]:shadow-lg [&_pre]:leading-relaxed [&_pre]:tracking-wide">
+            <MDXRemote 
+              source={post.content} 
+              components={mdxComponents}
+              options={{
+                mdxOptions: {
+                  remarkPlugins: [remarkGfm, remarkMath],
+                  rehypePlugins: [rehypeKatex, [rehypePrettyCode, { theme: "vitesse-dark" }]]
+                }
+              }}
+            />
           </div>
           </ContentProtect>
 
@@ -88,162 +124,4 @@ export default async function BlogPostPage({ params }: Props) {
       <Footer />
     </>
   );
-}
-
-async function renderMarkdown(content: string): Promise<string> {
-  const lines = content.split("\n");
-  let html = "";
-  let inList = false;
-  let inTable = false;
-  let tableRowIndex = 0;
-  let inMath = false;
-  let mathContent = "";
-  let inCodeBlock = false;
-  let codeBlockContent: string[] = [];
-  let codeLang = "text";
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-
-    // Code block (```)
-    if (trimmed.startsWith("```")) {
-      if (!inCodeBlock) {
-        if (inList) { html += "</ul>"; inList = false; }
-        if (inTable) { html += "</tbody></table></div>"; inTable = false; }
-        inCodeBlock = true;
-        codeLang = trimmed.slice(3).trim() || "text";
-        codeBlockContent = [];
-      } else {
-        inCodeBlock = false;
-        try {
-          const highlighted = await codeToHtml(codeBlockContent.join("\n"), {
-            lang: codeLang,
-            theme: "vitesse-dark",
-          });
-          html += `<div class="my-10 rounded-xl overflow-hidden shadow-lg border border-border text-sm leading-relaxed tracking-wide">${highlighted}</div>`;
-        } catch(e) {
-          const escaped = codeBlockContent.join("\n").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-          html += `<pre class="bg-[#121212] text-white/90 p-5 my-10 rounded-xl overflow-x-auto text-sm shadow-lg leading-relaxed tracking-wide"><code>${escaped}</code></pre>`;
-        }
-      }
-      continue;
-    }
-
-    if (inCodeBlock) {
-      codeBlockContent.push(line);
-      continue;
-    }
-
-    // Math block ($$...$$)
-    if (trimmed.startsWith("$$") && !inMath) {
-      if (inList) { html += "</ul>"; inList = false; }
-      if (inTable) { html += "</tbody></table></div>"; inTable = false; }
-      const inline = trimmed.slice(2).trim();
-      if (inline.endsWith("$$") && inline.length > 2) {
-        html += `<div class="math-block">${renderKatex(inline.slice(0, -2), true)}</div>`;
-      } else {
-        inMath = true;
-        mathContent = inline;
-      }
-      continue;
-    }
-    if (inMath) {
-      if (trimmed.endsWith("$$")) {
-        mathContent += (mathContent ? " " : "") + trimmed.slice(0, -2);
-        html += `<div class="math-block">${renderKatex(mathContent.trim(), true)}</div>`;
-        inMath = false;
-        mathContent = "";
-      } else {
-        mathContent += (mathContent ? " " : "") + trimmed;
-      }
-      continue;
-    }
-
-    // Table rows
-    if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
-      if (inList) { html += "</ul>"; inList = false; }
-      const cells = trimmed.slice(1, -1).split("|").map((c) => c.trim());
-
-      // Separator row (| --- | --- |)
-      if (cells.every((c) => /^[-:]+$/.test(c))) {
-        continue;
-      }
-
-      if (!inTable) {
-        html += `<div class="table-wrap"><table><thead><tr>`;
-        cells.forEach((c) => { html += `<th>${processInline(c)}</th>`; });
-        html += `</tr></thead><tbody>`;
-        inTable = true;
-        tableRowIndex = 0;
-      } else {
-        html += `<tr>`;
-        cells.forEach((c) => { html += `<td>${processInline(c)}</td>`; });
-        html += `</tr>`;
-        tableRowIndex++;
-      }
-      continue;
-    }
-
-    if (inTable) { html += "</tbody></table></div>"; inTable = false; }
-
-    // Image
-    const imgMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
-    if (imgMatch) {
-      if (inList) { html += "</ul>"; inList = false; }
-      html += `<figure><img src="${imgMatch[2]}" alt="${imgMatch[1]}" loading="lazy" />${imgMatch[1] ? `<figcaption>${imgMatch[1]}</figcaption>` : ""}</figure>`;
-      continue;
-    }
-
-    if (trimmed.startsWith("### ")) {
-      if (inList) { html += "</ul>"; inList = false; }
-      html += `<h3>${processInline(trimmed.slice(4))}</h3>`;
-    } else if (trimmed.startsWith("## ")) {
-      if (inList) { html += "</ul>"; inList = false; }
-      html += `<h2>${processInline(trimmed.slice(3))}</h2>`;
-    } else if (trimmed.startsWith("# ")) {
-      if (inList) { html += "</ul>"; inList = false; }
-      html += `<h1>${processInline(trimmed.slice(2))}</h1>`;
-    } else if (trimmed.startsWith("> ")) {
-      if (inList) { html += "</ul>"; inList = false; }
-      html += `<blockquote><p>${processInline(trimmed.slice(2))}</p></blockquote>`;
-    } else if (trimmed.startsWith("- ")) {
-      if (!inList) { html += "<ul>"; inList = true; }
-      html += `<li>${processInline(trimmed.slice(2))}</li>`;
-    } else if (trimmed === "") {
-      if (inList) { html += "</ul>"; inList = false; }
-    } else {
-      if (inList) { html += "</ul>"; inList = false; }
-      html += `<p>${processInline(trimmed)}</p>`;
-    }
-  }
-
-  if (inList) html += "</ul>";
-  if (inTable) html += "</tbody></table></div>";
-  return html;
-}
-
-function renderKatex(tex: string, displayMode: boolean): string {
-  try {
-    return katex.renderToString(tex, { displayMode, throwOnError: false });
-  } catch {
-    return `<code>${escapeHtml(tex)}</code>`;
-  }
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-function processInline(text: string): string {
-  // Inline math $...$ → KaTeX (process before other inline formatting)
-  text = text.replace(/\$([^$\n]+?)\$/g, (_, math) => renderKatex(math, false));
-
-  return text
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/`(.+?)`/g, "<code>$1</code>")
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 }
