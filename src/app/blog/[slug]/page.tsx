@@ -36,11 +36,13 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import rehypePrettyCode from "rehype-pretty-code";
 import { CyberChart } from "@/components/blog/CyberChart";
+import { CodeBlock } from "@/components/blog/CodeBlock";
 
 const mdxComponents = {
   CyberChart: (props: any) => {
     return <CyberChart dataString={props.data} type={props.type || "stepAfter"} yScale={props.yScale || "linear"} />;
   },
+  pre: (props: any) => <CodeBlock {...props} />,
   code: ({ className, children, ...props }: any) => {
     return <code className={className} {...props}>{children}</code>;
   },
