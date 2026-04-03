@@ -29,6 +29,7 @@ export function CustomCursor() {
 
     let isHovering = false;
     let isHidden = false;
+    let isInCursorHideZone = false;
 
     const handleMove = (e: MouseEvent) => {
       // Check if mouse is interacting with native scrollbar or left screen
@@ -40,8 +41,7 @@ export function CustomCursor() {
           isHidden = true;
         }
       } else {
-        if (isHidden) {
-          // ring starts with opacity 1, or 0 if hovering. We'll simplify and just fade to 1 unless hovering 
+        if (isHidden && !isInCursorHideZone) {
           gsap.to(dot, { opacity: 1, duration: 0.2 });
           gsap.to(ring, { opacity: isHovering ? 0 : 1, duration: 0.2 });
           isHidden = false;
@@ -63,7 +63,7 @@ export function CustomCursor() {
     };
 
     const handleWindowEnter = () => {
-      if (isHidden) {
+      if (isHidden && !isInCursorHideZone) {
         gsap.to(dot, { opacity: 1, duration: 0.2 });
         gsap.to(ring, { opacity: isHovering ? 0 : 1, duration: 0.2 });
         isHidden = false;
@@ -109,17 +109,17 @@ export function CustomCursor() {
     
     // Hide cursor when hovering over [data-cursor-hide] zones (e.g. giscus section)
     const handleCursorHideEnter = () => {
+      isInCursorHideZone = true;
       if (!isHidden) {
         gsap.to([dot, ring, pixels], { opacity: 0, duration: 0.15 });
         isHidden = true;
       }
     };
     const handleCursorHideLeave = () => {
-      if (isHidden) {
-        gsap.to(dot, { opacity: 1, duration: 0.15 });
-        gsap.to(ring, { opacity: isHovering ? 0 : 1, duration: 0.15 });
-        isHidden = false;
-      }
+      isInCursorHideZone = false;
+      gsap.to(dot, { opacity: 1, duration: 0.15 });
+      gsap.to(ring, { opacity: isHovering ? 0 : 1, duration: 0.15 });
+      isHidden = false;
     };
 
     const attachCursorHideListeners = () => {

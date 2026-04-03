@@ -219,61 +219,59 @@ main .gsc-comment-content .emoji {
   filter: none;
 }
 
-/* Comment action menu (edit/delete) */
-main .gsc-comment-header details > summary {
-  color: #666666;
+/* Comment action menu (edit/delete) — broad selectors for giscus */
+main details > summary,
+main .gsc-comment-header summary,
+main .gsc-comment summary {
+  color: #888888 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
-main .gsc-comment-header details > summary:hover {
-  color: #33cc77;
-}
-
-main .gsc-comment-header details .SelectMenu {
-  background-color: #141414;
-  border: 1px solid #2a2a2a;
-  border-radius: 0;
-}
-
-main .gsc-comment-header details .SelectMenu-item {
-  color: #c0c0c0;
-  border-bottom-color: #2a2a2a;
-}
-
-main .gsc-comment-header details .SelectMenu-item:hover {
-  background-color: #1e1e1e;
-  color: #33cc77;
+main details > summary:hover,
+main .gsc-comment-header summary:hover {
+  color: #33cc77 !important;
 }
 
 main details summary svg,
-main .gsc-comment-header details summary svg {
-  fill: #666666;
-  color: #666666;
+main summary svg {
+  fill: #888888 !important;
+  color: #888888 !important;
+  opacity: 1 !important;
 }
 
 main details summary:hover svg,
-main .gsc-comment-header details summary:hover svg {
-  fill: #33cc77;
-  color: #33cc77;
+main summary:hover svg {
+  fill: #33cc77 !important;
+  color: #33cc77 !important;
 }
 
-/* Dropdown menus */
-main details-menu,
+/* Dropdown/overlay menus */
+main details[open] > .SelectMenu,
+main details[open] > details-menu,
+main details[open] > .dropdown-menu,
 main .select-menu-modal,
-main .details-overlay details[open] > summary::before {
-  background-color: #141414;
-  border-color: #2a2a2a;
+main [role="menu"] {
+  background-color: #141414 !important;
+  border: 1px solid #2a2a2a !important;
   border-radius: 0 !important;
-}
-
-main .select-menu-item,
-main details-menu-item,
-main [role="menuitem"] {
   color: #c0c0c0;
 }
 
+main .SelectMenu-item,
+main .select-menu-item,
+main [role="menuitem"],
+main [role="menuitemradio"],
+main details-menu-item {
+  color: #c0c0c0 !important;
+  border-color: #2a2a2a !important;
+}
+
+main .SelectMenu-item:hover,
 main .select-menu-item:hover,
-main details-menu-item:hover,
-main [role="menuitem"]:hover {
-  background-color: #1e1e1e;
-  color: #33cc77;
+main [role="menuitem"]:hover,
+main [role="menuitemradio"]:hover,
+main details-menu-item:hover {
+  background-color: #1e1e1e !important;
+  color: #33cc77 !important;
 }
