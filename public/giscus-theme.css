@@ -184,15 +184,18 @@ main .gsc-comment-content .markdown-body code {
 }
 
 main .gsc-comment-content .markdown-body pre {
-  background-color: #0a0a0a !important;
+  background-color: #050505 !important;
   border: 1px solid #2a2a2a;
+  border-left: 3px solid #33cc77;
   border-radius: 0 !important;
+  padding: 16px !important;
 }
 
 main .gsc-comment-content .markdown-body pre code {
-  color: #abb2bf;
+  color: #33cc77;
   border: none;
   padding: 0;
+  text-shadow: 0 0 8px rgba(51, 204, 119, 0.15);
 }
 
 main .gsc-comment-content .markdown-body a {
