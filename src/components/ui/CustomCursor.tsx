@@ -94,73 +94,57 @@ export function CustomCursor() {
       });
     };
 
-    const attachListeners = () => {
-      const targets = document.querySelectorAll("a, button, [data-cursor-glitch]");
-      targets.forEach((el) => {
-        el.addEventListener("mouseenter", handleEnterInteractive);
-        el.addEventListener("mouseleave", handleLeaveInteractive);
-      });
-      return targets;
+    // Event delegation — replaces MutationObserver + per-element listeners
+    const handleOver = (e: MouseEvent) => {
+      const target = e.target as Element;
+      if (target.closest("a, button, [data-cursor-glitch]")) {
+        handleEnterInteractive();
+      }
+      if (target.closest("[data-cursor-hide]")) {
+        if (!isInCursorHideZone) {
+          isInCursorHideZone = true;
+          if (!isHidden) {
+            gsap.to([dot, ring, pixels], { opacity: 0, duration: 0.15 });
+            isHidden = true;
+          }
+        }
+      }
+    };
+
+    const handleOut = (e: MouseEvent) => {
+      const target = e.target as Element;
+      const related = e.relatedTarget as Element | null;
+
+      if (
+        target.closest("a, button, [data-cursor-glitch]") &&
+        (!related || !related.closest("a, button, [data-cursor-glitch]"))
+      ) {
+        handleLeaveInteractive();
+      }
+
+      if (
+        target.closest("[data-cursor-hide]") &&
+        (!related || !related.closest("[data-cursor-hide]"))
+      ) {
+        isInCursorHideZone = false;
+        gsap.to(dot, { opacity: 1, duration: 0.15 });
+        gsap.to(ring, { opacity: isHovering ? 0 : 1, duration: 0.15 });
+        isHidden = false;
+      }
     };
 
     window.addEventListener("mousemove", handleMove);
     document.addEventListener("mouseleave", handleWindowLeave);
     document.addEventListener("mouseenter", handleWindowEnter);
-    
-    // Hide cursor when hovering over [data-cursor-hide] zones (e.g. giscus section)
-    const handleCursorHideEnter = () => {
-      isInCursorHideZone = true;
-      if (!isHidden) {
-        gsap.to([dot, ring, pixels], { opacity: 0, duration: 0.15 });
-        isHidden = true;
-      }
-    };
-    const handleCursorHideLeave = () => {
-      isInCursorHideZone = false;
-      gsap.to(dot, { opacity: 1, duration: 0.15 });
-      gsap.to(ring, { opacity: isHovering ? 0 : 1, duration: 0.15 });
-      isHidden = false;
-    };
-
-    const attachCursorHideListeners = () => {
-      const zones = document.querySelectorAll("[data-cursor-hide]");
-      zones.forEach((zone) => {
-        zone.addEventListener("mouseenter", handleCursorHideEnter);
-        zone.addEventListener("mouseleave", handleCursorHideLeave);
-      });
-      return zones;
-    };
-
-    let targets = attachListeners();
-    let cursorHideZones = attachCursorHideListeners();
-
-    const observer = new MutationObserver(() => {
-      targets.forEach((el) => {
-        el.removeEventListener("mouseenter", handleEnterInteractive);
-        el.removeEventListener("mouseleave", handleLeaveInteractive);
-      });
-      cursorHideZones.forEach((zone) => {
-        zone.removeEventListener("mouseenter", handleCursorHideEnter);
-        zone.removeEventListener("mouseleave", handleCursorHideLeave);
-      });
-      targets = attachListeners();
-      cursorHideZones = attachCursorHideListeners();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    document.addEventListener("mouseover", handleOver);
+    document.addEventListener("mouseout", handleOut);
 
     return () => {
       window.removeEventListener("mousemove", handleMove);
       document.removeEventListener("mouseleave", handleWindowLeave);
       document.removeEventListener("mouseenter", handleWindowEnter);
-      targets.forEach((el) => {
-        el.removeEventListener("mouseenter", handleEnterInteractive);
-        el.removeEventListener("mouseleave", handleLeaveInteractive);
-      });
-      cursorHideZones.forEach((zone) => {
-        zone.removeEventListener("mouseenter", handleCursorHideEnter);
-        zone.removeEventListener("mouseleave", handleCursorHideLeave);
-      });
-      observer.disconnect();
+      document.removeEventListener("mouseover", handleOver);
+      document.removeEventListener("mouseout", handleOut);
     };
   }, []);
 

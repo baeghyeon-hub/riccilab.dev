@@ -16,15 +16,35 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
     });
 
     let currentReq: number;
+    let running = false;
+
     function raf(time: number) {
       lenis.raf(time);
       currentReq = requestAnimationFrame(raf);
     }
 
-    currentReq = requestAnimationFrame(raf);
+    function startLoop() {
+      if (!running) {
+        running = true;
+        currentReq = requestAnimationFrame(raf);
+      }
+    }
+
+    function stopLoop() {
+      running = false;
+      cancelAnimationFrame(currentReq);
+    }
+
+    const handleVisibility = () => {
+      document.hidden ? stopLoop() : startLoop();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    startLoop();
 
     return () => {
-      cancelAnimationFrame(currentReq);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      stopLoop();
       lenis.destroy();
     };
   }, []);

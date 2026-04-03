@@ -6,23 +6,36 @@ export function ScrollHUD() {
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => {
+    let rafId = 0;
+    let lastValue = -1;
+
+    const update = () => {
+      rafId = 0;
       const totalScroll = document.documentElement.scrollTop || document.body.scrollTop;
       const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      
-      if (windowHeight === 0) {
-        setScrollProgress(0);
-        return;
+      const scroll = windowHeight === 0
+        ? 0
+        : Math.min(100, Math.max(0, Math.floor((totalScroll / windowHeight) * 100)));
+
+      if (scroll !== lastValue) {
+        lastValue = scroll;
+        setScrollProgress(scroll);
       }
-      
-      const scroll = Math.floor((totalScroll / windowHeight) * 100);
-      setScrollProgress(Math.min(100, Math.max(0, scroll)));
+    };
+
+    const handleScroll = () => {
+      if (!rafId) {
+        rafId = requestAnimationFrame(update);
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
+    update();
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   return (

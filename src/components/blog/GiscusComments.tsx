@@ -3,9 +3,6 @@
 import Giscus from "@giscus/react";
 import { useEffect, useState } from "react";
 
-const THEME_LIGHT = `${typeof window !== "undefined" ? window.location.origin : ""}/giscus-theme-light.css`;
-const THEME_DARK = `${typeof window !== "undefined" ? window.location.origin : ""}/giscus-theme.css`;
-
 export function GiscusComments() {
   const [theme, setTheme] = useState("");
 

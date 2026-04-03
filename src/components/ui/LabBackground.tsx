@@ -28,21 +28,23 @@ export function LabBackground() {
     if (!container) return;
 
     const items = container.querySelectorAll("[data-float]");
+    const tl = gsap.timeline();
+
     const ctx = gsap.context(() => {
       // Grid pulse animation
       if (gridRef.current) {
-        gsap.fromTo(
+        tl.add(gsap.fromTo(
           gridRef.current,
           { opacity: 0.05 },
           { opacity: 0.15, duration: 4, repeat: -1, yoyo: true, ease: "sine.inOut" }
-        );
+        ), 0);
       }
       if (subGridRef.current) {
-        gsap.fromTo(
+        tl.add(gsap.fromTo(
           subGridRef.current,
           { opacity: 0.03 },
           { opacity: 0.08, duration: 5, repeat: -1, yoyo: true, ease: "sine.inOut", delay: 1.5 }
-        );
+        ), 0);
       }
 
       items.forEach((item, i) => {
@@ -53,20 +55,20 @@ export function LabBackground() {
         });
 
         // Slow drift animation
-        gsap.to(item, {
+        tl.add(gsap.to(item, {
           x: `+=${Math.random() * 60 - 30}`,
           y: `+=${Math.random() * 40 - 20}`,
           duration: 8 + Math.random() * 12,
           repeat: -1,
           yoyo: true,
           ease: "sine.inOut",
-        });
+        }), 0);
 
         // Pulse: fade between light and dark
         const isDark = document.documentElement.classList.contains("dark");
         const lo = isDark ? "rgba(240,240,240,0.1)" : "rgba(0,0,0,0.1)";
         const hi = isDark ? "rgba(240,240,240,0.4)" : "rgba(0,0,0,0.4)";
-        gsap.fromTo(
+        tl.add(gsap.fromTo(
           item,
           { color: lo },
           {
@@ -77,11 +79,20 @@ export function LabBackground() {
             ease: "sine.inOut",
             delay: i * 0.8,
           }
-        );
+        ), 0);
       });
     }, container);
 
-    return () => ctx.revert();
+    const handleVisibility = () => {
+      document.hidden ? tl.pause() : tl.resume();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      ctx.revert();
+    };
   }, []);
 
   return (
