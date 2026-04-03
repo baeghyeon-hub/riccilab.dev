@@ -107,14 +107,44 @@ export function CustomCursor() {
     document.addEventListener("mouseleave", handleWindowLeave);
     document.addEventListener("mouseenter", handleWindowEnter);
     
+    // Hide cursor when hovering over iframes (e.g. giscus)
+    const handleIframeEnter = () => {
+      if (!isHidden) {
+        gsap.to([dot, ring], { opacity: 0, duration: 0.15 });
+        isHidden = true;
+      }
+    };
+    const handleIframeLeave = () => {
+      if (isHidden) {
+        gsap.to(dot, { opacity: 1, duration: 0.15 });
+        gsap.to(ring, { opacity: isHovering ? 0 : 1, duration: 0.15 });
+        isHidden = false;
+      }
+    };
+
+    const attachIframeListeners = () => {
+      const iframes = document.querySelectorAll("iframe");
+      iframes.forEach((iframe) => {
+        iframe.addEventListener("mouseenter", handleIframeEnter);
+        iframe.addEventListener("mouseleave", handleIframeLeave);
+      });
+      return iframes;
+    };
+
     let targets = attachListeners();
+    let iframes = attachIframeListeners();
 
     const observer = new MutationObserver(() => {
       targets.forEach((el) => {
         el.removeEventListener("mouseenter", handleEnterInteractive);
         el.removeEventListener("mouseleave", handleLeaveInteractive);
       });
+      iframes.forEach((iframe) => {
+        iframe.removeEventListener("mouseenter", handleIframeEnter);
+        iframe.removeEventListener("mouseleave", handleIframeLeave);
+      });
       targets = attachListeners();
+      iframes = attachIframeListeners();
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
@@ -125,6 +155,10 @@ export function CustomCursor() {
       targets.forEach((el) => {
         el.removeEventListener("mouseenter", handleEnterInteractive);
         el.removeEventListener("mouseleave", handleLeaveInteractive);
+      });
+      iframes.forEach((iframe) => {
+        iframe.removeEventListener("mouseenter", handleIframeEnter);
+        iframe.removeEventListener("mouseleave", handleIframeLeave);
       });
       observer.disconnect();
     };
@@ -138,6 +172,7 @@ export function CustomCursor() {
       <style jsx global>{`
         @media (pointer: fine) {
           *, *::before, *::after { cursor: none !important; }
+          iframe { cursor: auto !important; }
         }
       `}</style>
 

@@ -197,3 +197,21 @@ main .avatar,
 main .gsc-comment-author-avatar img {
   border-radius: 0 !important;
 }
+
+/* Emojis — ensure visibility on dark background */
+main g-emoji,
+main .emoji,
+main [data-emoji] {
+  font-style: normal;
+  filter: none;
+  -webkit-text-stroke: 0;
+  color: initial;
+  background: none;
+  font-size: 1.2em;
+}
+
+main .gsc-comment-content g-emoji,
+main .gsc-comment-content .emoji {
+  color: initial;
+  filter: none;
+}
