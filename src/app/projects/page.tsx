@@ -7,7 +7,7 @@ import { Navigation } from "@/components/layout/Navigation";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "PROJECTS — RICCILAB",
+  title: "PROJECTS",
   description: "프로젝트 갤러리",
 };
 

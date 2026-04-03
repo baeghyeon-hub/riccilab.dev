@@ -1,10 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { CustomCursor } from "@/components/ui/CustomCursor";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { LenisProvider } from "@/components/layout/LenisProvider";
 import { ScrollHUD } from "@/components/ui/ScrollHUD";
 import { ThemeGlitchFilter } from "@/components/ui/ThemeGlitchFilter";
+import { BASE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/constants";
+import { organizationJsonLd } from "@/lib/jsonld";
 import "./globals.css";
 
 const inter = Inter({
@@ -14,9 +16,62 @@ const inter = Inter({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+};
+
 export const metadata: Metadata = {
-  title: "RICCILAB",
-  description: "Experiments in code, systems, and interfaces.",
+  metadataBase: new URL(BASE_URL),
+  title: {
+    template: `%s — ${SITE_NAME}`,
+    default: SITE_NAME,
+  },
+  description: SITE_DESCRIPTION,
+  keywords: ["개발", "프로그래밍", "보안", "네트워크", "시스템", "블로그"],
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    url: BASE_URL,
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: SITE_NAME,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: ["/og-image.png"],
+  },
+  alternates: {
+    canonical: "/",
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large" as const,
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -38,6 +93,12 @@ export default function RootLayout({
                 }
               } catch (_) {}
             `,
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationJsonLd()),
           }}
         />
       </head>

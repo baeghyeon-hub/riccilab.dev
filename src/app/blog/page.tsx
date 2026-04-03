@@ -7,7 +7,7 @@ import { Navigation } from "@/components/layout/Navigation";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "BLOG — RICCILAB",
+  title: "BLOG",
   description: "코드와 크리에이티브의 기록",
 };
 

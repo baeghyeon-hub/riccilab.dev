@@ -25,8 +25,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return { title: "Not Found" };
 
   return {
-    title: `${post.title} — RICCILAB`,
+    title: post.title,
     description: post.description,
+    keywords: post.tags,
+    alternates: {
+      canonical: `/blog/${slug}`,
+    },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description: post.description,
+      url: `/blog/${slug}`,
+      publishedTime: post.date ? new Date(post.date).toISOString() : undefined,
+      tags: post.tags,
+      images: [{ url: "/og-image.png", width: 1200, height: 630, alt: post.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.description,
+      images: ["/og-image.png"],
+    },
   };
 }
 
@@ -37,6 +56,7 @@ import rehypeKatex from "rehype-katex";
 import rehypePrettyCode from "rehype-pretty-code";
 import { CyberChart } from "@/components/blog/CyberChart";
 import { CodeBlock } from "@/components/blog/CodeBlock";
+import { articleJsonLd } from "@/lib/jsonld";
 
 const mdxComponents = {
   CyberChart: (props: any) => {
@@ -67,6 +87,18 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <>
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleJsonLd({
+            title: post.title,
+            description: post.description,
+            date: post.date,
+            slug,
+            tags: post.tags,
+          })),
+        }}
+      />
       <LabBackground />
       <Navigation />
       <article className="relative min-h-screen pt-32 pb-20 px-6 md:px-16 select-none">
