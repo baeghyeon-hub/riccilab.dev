@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   description: "코드와 크리에이티브의 기록",
 };
 
-export default function BlogPage() {
-  const posts = getAllPosts();
+export default async function BlogPage() {
+  const posts = await getAllPosts();
 
   return (
     <>

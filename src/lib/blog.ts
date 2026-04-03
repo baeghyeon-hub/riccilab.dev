@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { getNotionPosts, getNotionPostContent, type NotionBlogPost } from "./notion";
 
 const BLOG_DIR = path.join(process.cwd(), "src/content/blog");
 
@@ -12,12 +13,14 @@ export interface BlogPost {
   tags: string[];
 }
 
-export function getAllPosts(): BlogPost[] {
+// ─── Filesystem helpers (sync, private) ──────────────────────────────
+
+function getFilesystemPosts(): BlogPost[] {
   if (!fs.existsSync(BLOG_DIR)) return [];
 
   const files = fs.readdirSync(BLOG_DIR).filter((f) => f.endsWith(".mdx") || f.endsWith(".md"));
 
-  const posts = files.map((filename) => {
+  return files.map((filename) => {
     const slug = filename.replace(/\.mdx?$/, "");
     const filePath = path.join(BLOG_DIR, filename);
     const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -31,12 +34,9 @@ export function getAllPosts(): BlogPost[] {
       tags: data.tags || [],
     };
   });
-
-  return posts.sort((a, b) => (a.date > b.date ? -1 : 1));
 }
 
-export function getPostBySlug(rawSlug: string) {
-  const slug = decodeURIComponent(rawSlug);
+function getFilesystemPostBySlug(slug: string) {
   const mdxPath = path.join(BLOG_DIR, `${slug}.mdx`);
   const mdPath = path.join(BLOG_DIR, `${slug}.md`);
   const filePath = fs.existsSync(mdxPath) ? mdxPath : mdPath;
@@ -51,6 +51,46 @@ export function getPostBySlug(rawSlug: string) {
     date: data.date || "",
     description: data.description || "",
     tags: data.tags || [],
+    content,
+  };
+}
+
+// ─── Public async API ────────────────────────────────────────────────
+
+export async function getAllPosts(): Promise<BlogPost[]> {
+  const fsPosts = getFilesystemPosts();
+  const notionPosts = await getNotionPosts();
+
+  // Filesystem wins on slug collision
+  const slugSet = new Set(fsPosts.map((p) => p.slug));
+  const merged: BlogPost[] = [
+    ...fsPosts,
+    ...notionPosts.filter((p) => !slugSet.has(p.slug)),
+  ];
+
+  return merged.sort((a, b) => (a.date > b.date ? -1 : 1));
+}
+
+export async function getPostBySlug(rawSlug: string) {
+  const slug = decodeURIComponent(rawSlug);
+
+  // Filesystem first
+  const fsPost = getFilesystemPostBySlug(slug);
+  if (fsPost) return fsPost;
+
+  // Then Notion
+  const notionPosts = await getNotionPosts();
+  const notionPost = notionPosts.find((p) => p.slug === slug);
+  if (!notionPost) return null;
+
+  const content = await getNotionPostContent(notionPost.notionPageId);
+
+  return {
+    slug: notionPost.slug,
+    title: notionPost.title,
+    date: notionPost.date,
+    description: notionPost.description,
+    tags: notionPost.tags,
     content,
   };
 }
