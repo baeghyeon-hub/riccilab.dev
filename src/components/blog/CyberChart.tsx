@@ -16,12 +16,13 @@ interface CyberChartProps {
   dataString?: string;
   className?: string;
   type?: "linear" | "monotone" | "stepBefore" | "stepAfter";
+  yScale?: "linear" | "log";
 }
 
 // System/Cybernetic specific neon colors
 const NEON_COLORS = ["#33cc77", "#ff9900", "#00eeff", "#ff00ea", "#eaff00"];
 
-export function CyberChart({ dataString, className = "", type = "linear" }: CyberChartProps) {
+export function CyberChart({ dataString, className = "", type = "linear", yScale = "linear" }: CyberChartProps) {
   const chartData = useMemo(() => {
     if (!dataString) return [];
     try {
@@ -62,7 +63,7 @@ export function CyberChart({ dataString, className = "", type = "linear" }: Cybe
 
       <div className="h-[350px] sm:h-[450px] w-full font-mono text-xs">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
+          <LineChart data={chartData} margin={{ top: 10, right: 20, left: yScale === "log" ? 10 : -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="2 4" stroke="currentColor" className="opacity-10 dark:opacity-20 text-black dark:text-white" vertical={false} />
             <XAxis 
               dataKey={xKey} 
@@ -72,12 +73,23 @@ export function CyberChart({ dataString, className = "", type = "linear" }: Cybe
               axisLine={{ stroke: "var(--color-border)" }} 
               tickMargin={15}
             />
-            <YAxis 
-              stroke="var(--color-muted)" 
-              tick={{ fill: "var(--color-muted)", fontSize: 11 }} 
-              tickLine={false} 
-              axisLine={{ stroke: "var(--color-border)" }} 
+            <YAxis
+              stroke="var(--color-muted)"
+              tick={{ fill: "var(--color-muted)", fontSize: 11 }}
+              tickLine={false}
+              axisLine={{ stroke: "var(--color-border)" }}
               tickMargin={15}
+              {...(yScale === "log" ? {
+                scale: "log",
+                domain: ["auto", "auto"],
+                allowDataOverflow: true,
+                tickFormatter: (v: number) => {
+                  if (v <= 0) return "";
+                  const exp = Math.log10(v);
+                  if (Number.isInteger(Math.round(exp * 100) / 100)) return `10^${Math.round(exp)}`;
+                  return v.toExponential(0);
+                },
+              } : {})}
             />
             <Tooltip 
               contentStyle={{ 
