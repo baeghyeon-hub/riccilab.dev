@@ -44,7 +44,7 @@ export function GiscusComments() {
           emitMetadata="0"
           inputPosition="top"
           theme={theme}
-          lang="ko"
+          lang="en"
           loading="lazy"
         />
       </div>

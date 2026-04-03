@@ -113,38 +113,54 @@ main .gsc-reply-box textarea::placeholder {
 /* ===== LOGIN LINK — AUTH style ===== */
 
 main .gsc-comment-box-bottom a[href*="github"] {
-  color: #666666 !important;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 0 !important;
+  letter-spacing: 0;
   text-decoration: none !important;
 }
 
-main .gsc-comment-box-bottom a[href*="github"]:hover {
-  color: #33cc77 !important;
+main .gsc-comment-box-bottom a[href*="github"]::after {
+  content: 'AUTH: GitHub required';
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #666666;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+main .gsc-comment-box-bottom a[href*="github"]:hover::after {
+  color: #33cc77;
 }
 
 /* ===== SUBMIT BUTTON — EXECUTE style ===== */
 
 main .gsc-comment-box-bottom button[type="submit"],
 main .gsc-reply-box button[type="submit"] {
+  font-size: 0 !important;
   background-color: #141414 !important;
   border: 1px solid #33cc77 !important;
-  color: #33cc77 !important;
-  font-size: 11px !important;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   padding: 6px 16px !important;
   border-radius: 0 !important;
   font-weight: 500;
   transition: all 0.15s ease;
 }
 
+main .gsc-comment-box-bottom button[type="submit"]::after,
+main .gsc-reply-box button[type="submit"]::after {
+  content: '> EXECUTE';
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: #33cc77;
+  font-family: 'JetBrains Mono', monospace;
+}
+
 main .gsc-comment-box-bottom button[type="submit"]:hover,
 main .gsc-reply-box button[type="submit"]:hover {
   background-color: #33cc77 !important;
-  color: #000000 !important;
   box-shadow: 0 0 12px rgba(51, 204, 119, 0.3);
+}
+
+main .gsc-comment-box-bottom button[type="submit"]:hover::after,
+main .gsc-reply-box button[type="submit"]:hover::after {
+  color: #000000;
 }
 
 /* ===== COMMENT CONTENT — code/terminal style ===== */
