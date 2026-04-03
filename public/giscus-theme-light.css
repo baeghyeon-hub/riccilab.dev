@@ -185,16 +185,37 @@ main .gsc-comment-content .markdown-body code {
 
 main .gsc-comment-content .markdown-body pre {
   background-color: #f0f5f2 !important;
-  border: 1px solid #d0d0d0;
-  border-left: 3px solid #00aa55;
+  border: 1px solid #d0d0d0 !important;
+  border-left: 3px solid #00aa55 !important;
   border-radius: 0 !important;
   padding: 16px !important;
 }
 
 main .gsc-comment-content .markdown-body pre code {
-  color: #007744;
-  border: none;
-  padding: 0;
+  color: #007744 !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Broad fallback for code blocks */
+main .markdown-body pre {
+  background-color: #f0f5f2 !important;
+  border: 1px solid #d0d0d0 !important;
+  border-left: 3px solid #00aa55 !important;
+  border-radius: 0 !important;
+}
+
+main .markdown-body pre code {
+  color: #007744 !important;
+}
+
+main pre {
+  background-color: #f0f5f2 !important;
+  border-left: 3px solid #00aa55 !important;
+}
+
+main pre code {
+  color: #007744 !important;
 }
 
 main .gsc-comment-content .markdown-body a {
