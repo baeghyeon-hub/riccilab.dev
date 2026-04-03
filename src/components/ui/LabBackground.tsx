@@ -63,11 +63,14 @@ export function LabBackground() {
         });
 
         // Pulse: fade between light and dark
+        const isDark = document.documentElement.classList.contains("dark");
+        const lo = isDark ? "rgba(240,240,240,0.1)" : "rgba(0,0,0,0.1)";
+        const hi = isDark ? "rgba(240,240,240,0.4)" : "rgba(0,0,0,0.4)";
         gsap.fromTo(
           item,
-          { color: "rgba(0,0,0,0.1)" },
+          { color: lo },
           {
-            color: "rgba(0,0,0,0.4)",
+            color: hi,
             duration: 2 + Math.random() * 2,
             repeat: -1,
             yoyo: true,
@@ -90,7 +93,7 @@ export function LabBackground() {
         style={{
           opacity: 0.06,
           backgroundImage:
-            "linear-gradient(rgba(0,0,0,1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,1) 1px, transparent 1px)",
+            "linear-gradient(var(--black) 1px, transparent 1px), linear-gradient(90deg, var(--black) 1px, transparent 1px)",
           backgroundSize: "60px 60px",
         }}
       />
@@ -101,7 +104,7 @@ export function LabBackground() {
         style={{
           opacity: 0.03,
           backgroundImage:
-            "linear-gradient(rgba(0,0,0,1) 0.5px, transparent 0.5px), linear-gradient(90deg, rgba(0,0,0,1) 0.5px, transparent 0.5px)",
+            "linear-gradient(var(--black) 0.5px, transparent 0.5px), linear-gradient(90deg, var(--black) 0.5px, transparent 0.5px)",
           backgroundSize: "15px 15px",
         }}
       />
