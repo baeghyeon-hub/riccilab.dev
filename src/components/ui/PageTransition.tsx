@@ -110,8 +110,15 @@ export function PageTransition() {
       if (!anchor) return;
 
       const href = anchor.getAttribute("href");
-      if (!href || href.startsWith("http") || href.startsWith("mailto:") || href === "#") return;
+      if (!href || href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("#")) return;
       if (href === pathname) return;
+
+      // Skip transition for same-pathname navigations (query param changes only)
+      try {
+        const url = new URL(href, window.location.origin);
+        if (url.pathname === pathname) return;
+      } catch {}
+
 
       e.preventDefault();
       playExit(href);
