@@ -107,14 +107,14 @@ export function CustomCursor() {
     document.addEventListener("mouseleave", handleWindowLeave);
     document.addEventListener("mouseenter", handleWindowEnter);
     
-    // Hide cursor when hovering over iframes (e.g. giscus)
-    const handleIframeEnter = () => {
+    // Hide cursor when hovering over [data-cursor-hide] zones (e.g. giscus section)
+    const handleCursorHideEnter = () => {
       if (!isHidden) {
-        gsap.to([dot, ring], { opacity: 0, duration: 0.15 });
+        gsap.to([dot, ring, pixels], { opacity: 0, duration: 0.15 });
         isHidden = true;
       }
     };
-    const handleIframeLeave = () => {
+    const handleCursorHideLeave = () => {
       if (isHidden) {
         gsap.to(dot, { opacity: 1, duration: 0.15 });
         gsap.to(ring, { opacity: isHovering ? 0 : 1, duration: 0.15 });
@@ -122,29 +122,29 @@ export function CustomCursor() {
       }
     };
 
-    const attachIframeListeners = () => {
-      const iframes = document.querySelectorAll("iframe");
-      iframes.forEach((iframe) => {
-        iframe.addEventListener("mouseenter", handleIframeEnter);
-        iframe.addEventListener("mouseleave", handleIframeLeave);
+    const attachCursorHideListeners = () => {
+      const zones = document.querySelectorAll("[data-cursor-hide]");
+      zones.forEach((zone) => {
+        zone.addEventListener("mouseenter", handleCursorHideEnter);
+        zone.addEventListener("mouseleave", handleCursorHideLeave);
       });
-      return iframes;
+      return zones;
     };
 
     let targets = attachListeners();
-    let iframes = attachIframeListeners();
+    let cursorHideZones = attachCursorHideListeners();
 
     const observer = new MutationObserver(() => {
       targets.forEach((el) => {
         el.removeEventListener("mouseenter", handleEnterInteractive);
         el.removeEventListener("mouseleave", handleLeaveInteractive);
       });
-      iframes.forEach((iframe) => {
-        iframe.removeEventListener("mouseenter", handleIframeEnter);
-        iframe.removeEventListener("mouseleave", handleIframeLeave);
+      cursorHideZones.forEach((zone) => {
+        zone.removeEventListener("mouseenter", handleCursorHideEnter);
+        zone.removeEventListener("mouseleave", handleCursorHideLeave);
       });
       targets = attachListeners();
-      iframes = attachIframeListeners();
+      cursorHideZones = attachCursorHideListeners();
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
@@ -156,9 +156,9 @@ export function CustomCursor() {
         el.removeEventListener("mouseenter", handleEnterInteractive);
         el.removeEventListener("mouseleave", handleLeaveInteractive);
       });
-      iframes.forEach((iframe) => {
-        iframe.removeEventListener("mouseenter", handleIframeEnter);
-        iframe.removeEventListener("mouseleave", handleIframeLeave);
+      cursorHideZones.forEach((zone) => {
+        zone.removeEventListener("mouseenter", handleCursorHideEnter);
+        zone.removeEventListener("mouseleave", handleCursorHideLeave);
       });
       observer.disconnect();
     };
@@ -172,7 +172,7 @@ export function CustomCursor() {
       <style jsx global>{`
         @media (pointer: fine) {
           *, *::before, *::after { cursor: none !important; }
-          iframe { cursor: auto !important; }
+          [data-cursor-hide], [data-cursor-hide] *, iframe { cursor: auto !important; }
         }
       `}</style>
 

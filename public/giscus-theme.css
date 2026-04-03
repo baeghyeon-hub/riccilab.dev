@@ -202,16 +202,19 @@ main .gsc-comment-author-avatar img {
 main g-emoji,
 main .emoji,
 main [data-emoji] {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', sans-serif !important;
   font-style: normal;
   filter: none;
   -webkit-text-stroke: 0;
   color: initial;
   background: none;
   font-size: 1.2em;
+  line-height: 1;
 }
 
 main .gsc-comment-content g-emoji,
 main .gsc-comment-content .emoji {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Twemoji Mozilla', sans-serif !important;
   color: initial;
   filter: none;
 }

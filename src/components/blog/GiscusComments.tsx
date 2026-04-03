@@ -28,7 +28,7 @@ export function GiscusComments() {
   }, []);
 
   return (
-    <section className="max-w-3xl mx-auto mt-16">
+    <section className="max-w-3xl mx-auto mt-16" data-cursor-hide>
       <div className="border-t border-border pt-12">
         <div className="flex items-center gap-3 mb-8">
           <span className="font-mono text-[11px] tracking-[0.2em] text-muted">
