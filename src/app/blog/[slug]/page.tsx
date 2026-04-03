@@ -36,12 +36,10 @@ import rehypePrettyCode from "rehype-pretty-code";
 import { CyberChart } from "@/components/blog/CyberChart";
 
 const mdxComponents = {
+  CyberChart: (props: any) => {
+    return <CyberChart dataString={props.children} type="stepAfter" />;
+  },
   code: ({ className, children, ...props }: any) => {
-    const match = /language-(\w+)/.exec(className || "");
-    const lang = match ? match[1] : "";
-    if (lang === "chart" || lang === "cyberchart") {
-      return <CyberChart dataString={String(children)} type="stepAfter" />;
-    }
     return <code className={className} {...props}>{children}</code>;
   },
   img: (props: any) => (
