@@ -34,9 +34,9 @@ export function GiscusComments() {
         </div>
         <Giscus
           repo="baeghyeon-hub/riccilab.dev"
-          repoId=""
-          category="Blog Comments"
-          categoryId=""
+          repoId="R_kgDOR2_IEg"
+          category="General"
+          categoryId="DIC_kwDOR2_IEs4C59ID"
           mapping="pathname"
           strict="0"
           reactionsEnabled="1"
