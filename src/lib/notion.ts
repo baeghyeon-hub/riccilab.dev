@@ -12,6 +12,15 @@ const DATABASE_ID = process.env.NOTION_BLOG_DATABASE_ID ?? "";
 
 // ─── Rich text helpers ───────────────────────────────────────────────
 
+function escapeMdxChars(text: string): string {
+  return text.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\{/g, "&#123;").replace(/\}/g, "&#125;");
+}
+
+/** Plain text extraction without MDX escaping (for code blocks) */
+function richTextToPlain(richTexts: RichTextItemResponse[]): string {
+  return richTexts.map((rt) => rt.plain_text).join("");
+}
+
 function richTextToMdx(richTexts: RichTextItemResponse[]): string {
   return richTexts
     .map((rt) => {
@@ -19,10 +28,14 @@ function richTextToMdx(richTexts: RichTextItemResponse[]): string {
         return `$${rt.equation.expression}$`;
       }
       let text = rt.plain_text;
+      const a = rt.annotations;
+      // Escape MDX-sensitive chars in non-code plain text
+      if (!a.code) {
+        text = escapeMdxChars(text);
+      }
       if (rt.type === "text" && rt.text.link) {
         text = `[${text}](${rt.text.link.url})`;
       }
-      const a = rt.annotations;
       if (a.code) text = `\`${text}\``;
       if (a.bold) text = `**${text}**`;
       if (a.italic) text = `*${text}*`;
@@ -82,7 +95,7 @@ async function blockToMdx(block: Block, indent = ""): Promise<string> {
 
     case "code": {
       const lang = block.code.language === "plain text" ? "" : block.code.language;
-      const codeText = richTextToMdx(block.code.rich_text);
+      const codeText = richTextToPlain(block.code.rich_text);
 
       // Special: cyberchart code blocks (caption-based since Notion doesn't have "cyberchart" language)
       const caption = block.code.caption ? richTextToMdx(block.code.caption) : "";
