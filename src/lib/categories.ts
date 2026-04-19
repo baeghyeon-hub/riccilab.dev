@@ -2,8 +2,13 @@ import { Client } from "@notionhq/client";
 import { unstable_cache } from "next/cache";
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
-const CATEGORIES_DATA_SOURCE_ID =
-  process.env.NOTION_CATEGORIES_DATABASE_ID ?? "";
+
+// Two separate Notion DBs — one per site section — so the in-Notion
+// relation pickers on Blog Posts and Projects show only their own scope.
+const BLOG_CATEGORIES_DATA_SOURCE_ID =
+  process.env.NOTION_BLOG_CATEGORIES_DATABASE_ID ?? "";
+const PROJECT_CATEGORIES_DATA_SOURCE_ID =
+  process.env.NOTION_PROJECT_CATEGORIES_DATABASE_ID ?? "";
 
 export type CategoryScope = "blog" | "projects";
 
@@ -32,42 +37,56 @@ function normalizeSlug(raw: string): string {
 
 // ─── Notion query ────────────────────────────────────────────────────
 
+async function queryOneDataSource(
+  dataSourceId: string,
+  scope: CategoryScope
+): Promise<Category[]> {
+  if (!dataSourceId) return [];
+  try {
+    const response = await notion.dataSources.query({
+      data_source_id: dataSourceId,
+      filter: {
+        property: "Published",
+        checkbox: { equals: true },
+      },
+      sorts: [{ property: "Order", direction: "ascending" }],
+    });
+
+    return response.results.map((page: any) => {
+      const props = page.properties;
+      const name = props.Name?.title?.[0]?.plain_text ?? "Untitled";
+      const slugRaw = props.Slug?.rich_text?.[0]?.plain_text ?? "";
+      // Parent relation is optional — the split DBs ship flat by default,
+      // but we keep the field so nested hierarchies still work if added.
+      const parentRelation = props.Parent?.relation ?? [];
+
+      return {
+        id: page.id,
+        name,
+        slug: normalizeSlug(slugRaw || name),
+        parentId: parentRelation[0]?.id ?? null,
+        order: props.Order?.number ?? 999,
+        description: props.Description?.rich_text?.[0]?.plain_text ?? "",
+        scope: [scope],
+        published: props.Published?.checkbox ?? false,
+      } satisfies Category;
+    });
+  } catch (err) {
+    console.error(
+      `Failed to fetch Notion categories (${scope}):`,
+      err
+    );
+    return [];
+  }
+}
+
 export const getAllCategories = unstable_cache(
   async (): Promise<Category[]> => {
-    if (!CATEGORIES_DATA_SOURCE_ID) return [];
-    try {
-      const response = await notion.dataSources.query({
-        data_source_id: CATEGORIES_DATA_SOURCE_ID,
-        filter: {
-          property: "Published",
-          checkbox: { equals: true },
-        },
-        sorts: [{ property: "Order", direction: "ascending" }],
-      });
-
-      return response.results.map((page: any) => {
-        const props = page.properties;
-        const name = props.Name?.title?.[0]?.plain_text ?? "Untitled";
-        const slugRaw = props.Slug?.rich_text?.[0]?.plain_text ?? "";
-        const parentRelation = props.Parent?.relation ?? [];
-
-        return {
-          id: page.id,
-          name,
-          slug: normalizeSlug(slugRaw || name),
-          parentId: parentRelation[0]?.id ?? null,
-          order: props.Order?.number ?? 999,
-          description: props.Description?.rich_text?.[0]?.plain_text ?? "",
-          scope: (
-            props.Scope?.multi_select?.map((s: any) => s.name) ?? []
-          ) as CategoryScope[],
-          published: props.Published?.checkbox ?? false,
-        } satisfies Category;
-      });
-    } catch (err) {
-      console.error("Failed to fetch Notion categories:", err);
-      return [];
-    }
+    const [blog, projects] = await Promise.all([
+      queryOneDataSource(BLOG_CATEGORIES_DATA_SOURCE_ID, "blog"),
+      queryOneDataSource(PROJECT_CATEGORIES_DATA_SOURCE_ID, "projects"),
+    ]);
+    return [...blog, ...projects];
   },
   ["notion-categories"],
   { tags: ["notion-categories"], revalidate: 300 }
