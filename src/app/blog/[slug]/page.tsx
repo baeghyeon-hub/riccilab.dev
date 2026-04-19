@@ -67,7 +67,17 @@ const mdxComponents = {
   CyberChart: (props: any) => {
     return <CyberChart dataString={props.data} type={props.type || "stepAfter"} yScale={props.yScale || "linear"} />;
   },
-  Mermaid: (props: any) => <MermaidDiagram code={props.code} />,
+  Mermaid: (props: any) => {
+    // Notion→MDX converter emits <Mermaid chart="<base64>" />. We decode
+    // server-side so the client component only ever sees a plain string.
+    const code =
+      typeof props.code === "string"
+        ? props.code
+        : typeof props.chart === "string"
+        ? Buffer.from(props.chart, "base64").toString("utf-8")
+        : "";
+    return <MermaidDiagram code={code} />;
+  },
   pre: (props: any) => <CodeBlock {...props} />,
   code: ({ className, children, ...props }: any) => {
     return <code className={className} {...props}>{children}</code>;

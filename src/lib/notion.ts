@@ -23,27 +23,57 @@ function richTextToPlain(richTexts: RichTextItemResponse[]): string {
 }
 
 function richTextToMdx(richTexts: RichTextItemResponse[]): string {
-  return richTexts
-    .map((rt) => {
-      if (rt.type === "equation") {
-        return `$${rt.equation.expression}$`;
-      }
-      let text = rt.plain_text;
-      const a = rt.annotations;
-      // Escape MDX-sensitive chars in non-code plain text
-      if (!a.code) {
-        text = escapeMdxChars(text);
-      }
-      if (rt.type === "text" && rt.text.link) {
-        text = `[${text}](${rt.text.link.url})`;
-      }
-      if (a.code) text = `\`${text}\``;
-      if (a.bold) text = `**${text}**`;
-      if (a.italic) text = `*${text}*`;
-      if (a.strikethrough) text = `~~${text}~~`;
-      return text;
-    })
-    .join("");
+  // Render one run's *inner* content — code formatting, links, MDX escapes.
+  // Emphasis wrapping (bold/italic/strike) is applied at the *group* level
+  // below so adjacent runs that share the same emphasis are wrapped once.
+  // Otherwise we'd emit `**foo **\`bar\`** baz**` which markdown parsers
+  // don't resolve back to a single bold span: the `****` sequences collapse
+  // and spaces around the delimiters break left/right-flanking rules, so
+  // the asterisks survive as literal text in the final HTML.
+  const renderInner = (rt: RichTextItemResponse): string => {
+    if (rt.type === "equation") {
+      return `$${rt.equation.expression}$`;
+    }
+    let text = rt.plain_text;
+    const a = rt.annotations;
+    if (!a.code) text = escapeMdxChars(text);
+    if (rt.type === "text" && rt.text.link) {
+      text = `[${text}](${rt.text.link.url})`;
+    }
+    if (a.code) text = `\`${text}\``;
+    return text;
+  };
+
+  const parts: string[] = [];
+  let i = 0;
+  while (i < richTexts.length) {
+    const first = richTexts[i];
+    // Equations are standalone; no emphasis wrapping (they already render
+    // as their own inline math span).
+    if (first.type === "equation") {
+      parts.push(renderInner(first));
+      i++;
+      continue;
+    }
+    const a0 = first.annotations;
+    let j = i + 1;
+    while (
+      j < richTexts.length &&
+      richTexts[j].type !== "equation" &&
+      richTexts[j].annotations.bold === a0.bold &&
+      richTexts[j].annotations.italic === a0.italic &&
+      richTexts[j].annotations.strikethrough === a0.strikethrough
+    ) {
+      j++;
+    }
+    let inner = richTexts.slice(i, j).map(renderInner).join("");
+    if (a0.strikethrough) inner = `~~${inner}~~`;
+    if (a0.italic) inner = `*${inner}*`;
+    if (a0.bold) inner = `**${inner}**`;
+    parts.push(inner);
+    i = j;
+  }
+  return parts.join("");
 }
 
 // ─── Block-to-MDX converter ─────────────────────────────────────────
@@ -121,10 +151,17 @@ async function blockToMdx(block: Block, indent = ""): Promise<string> {
       }
 
       // Special: mermaid diagrams → client-rendered SVG component.
-      // JSON.stringify gives a safely-escaped JS string literal so the
-      // diagram source survives MDX parsing unharmed (newlines, quotes, etc.).
+      // We base64-encode the diagram source and pass it as a plain string
+      // attribute. A JSX *expression* attribute (`code={"..."}`) doesn't
+      // round-trip reliably through the MDX pipeline when the body spans
+      // multiple lines or contains characters MDX treats as significant
+      // (curly braces, backticks, etc.), and the prop name `code` also
+      // collides with our lowercase `code` element handler. A base64
+      // string attribute sidesteps both issues — the component decodes it
+      // back to the original source on the server before rendering.
       if ((lang as string) === "mermaid") {
-        return `<Mermaid code={${JSON.stringify(codeText)}} />\n\n`;
+        const b64 = Buffer.from(codeText, "utf-8").toString("base64");
+        return `<Mermaid chart="${b64}" />\n\n`;
       }
 
       return `\`\`\`${lang}\n${codeText}\n\`\`\`\n\n`;
@@ -270,6 +307,10 @@ export const getNotionPostContent = unstable_cache(
     const blocks = await fetchAllBlocks(pageId);
     return blocksToMdx(blocks);
   },
-  ["notion-post-content"],
+  // Key is versioned so bumping it invalidates previously-cached MDX that
+  // was produced by an older converter (e.g. before the emphasis-grouping
+  // and mermaid-base64 fixes). Bump the suffix whenever the converter's
+  // output format changes in a user-visible way.
+  ["notion-post-content-v2"],
   { tags: ["notion-post"], revalidate: 300 }
 );
