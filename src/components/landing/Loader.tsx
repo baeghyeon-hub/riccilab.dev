@@ -171,7 +171,7 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
         <div className="overflow-hidden">
           <div
             ref={line1Ref}
-            className="text-[clamp(4rem,15vw,14rem)] font-black leading-[0.9] tracking-tighter"
+            className="font-[family-name:var(--font-display)] text-[clamp(4rem,15vw,14rem)] font-black leading-[0.9] tracking-tighter"
             style={{ color: "var(--bg)" }}
           >
             RICCI
@@ -180,7 +180,7 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
         <div className="overflow-hidden">
           <div
             ref={line2Ref}
-            className="text-[clamp(4rem,15vw,14rem)] font-black leading-[0.9] tracking-tighter"
+            className="font-[family-name:var(--font-display)] text-[clamp(4rem,15vw,14rem)] font-black leading-[0.9] tracking-tighter"
             style={{ color: "var(--bg)" }}
           >
             LAB

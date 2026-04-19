@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { LenisProvider } from "@/components/layout/LenisProvider";
 import { ScrollHUD } from "@/components/ui/ScrollHUD";
@@ -35,6 +36,19 @@ const codeNewRoman = localFont({
   display: "swap",
   preload: true,
   fallback: ["Pretendard Variable", "Pretendard", "system-ui", "sans-serif"],
+});
+
+// Display font for oversized landing chrome (RICCI / LAB titles in Hero,
+// Loader, and Marquee). CodeNewRoman's body stroke and serifs read as
+// "retro-tech prose" at body size but feel slightly awkward at 14rem,
+// where a clean blocky sans like Inter Black reads much sharper. We
+// only pull 800 + 900 so the payload stays tiny (~12KB per weight after
+// next/font's latin subset).
+const interDisplay = Inter({
+  subsets: ["latin"],
+  weight: ["800", "900"],
+  variable: "--font-display",
+  display: "swap",
 });
 
 export const viewport: Viewport = {
@@ -99,7 +113,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={codeNewRoman.variable} suppressHydrationWarning>
+    <html
+      lang="ko"
+      className={`${codeNewRoman.variable} ${interDisplay.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <link
           rel="preload"

@@ -74,7 +74,7 @@ function DesktopReactiveTitle() {
   return (
     <div className="hidden md:flex absolute inset-y-0 right-0 w-[50%] items-center justify-end pr-16 lg:pr-24 pointer-events-none">
       <div ref={hitRef} className="relative cursor-crosshair pointer-events-auto">
-        <div ref={textRef} className="text-[clamp(4rem,12vw,11rem)] font-black text-black leading-[0.85] tracking-tighter select-none whitespace-pre will-change-transform">
+        <div ref={textRef} className="font-[family-name:var(--font-display)] text-[clamp(4rem,12vw,11rem)] font-black text-black leading-[0.85] tracking-tighter select-none whitespace-pre will-change-transform">
           {`RICCI\nLAB`}
         </div>
       </div>
@@ -127,7 +127,7 @@ function MobileTitle() {
     <div className="md:hidden mb-6" data-mobile-title>
       <div
         ref={textRef}
-        className="text-[clamp(2.5rem,15vw,3.5rem)] font-black text-black leading-none tracking-tighter select-none will-change-transform"
+        className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,15vw,3.5rem)] font-black text-black leading-none tracking-tighter select-none will-change-transform"
       >
         RICCILAB
       </div>
