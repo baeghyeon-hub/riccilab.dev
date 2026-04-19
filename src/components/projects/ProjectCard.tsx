@@ -41,7 +41,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
       {/* Top: category + index */}
       <div className="relative z-[1] flex items-center justify-between mb-6 pointer-events-none">
         <span className="font-mono text-[10px] tracking-[0.2em] text-muted">
-          &gt; {project.category}
+          &gt; {project.categoryName || "UNCATEGORIZED"}
         </span>
         <span className="font-mono text-[10px] text-muted tracking-wider">
           [{String(index + 1).padStart(2, "0")}]

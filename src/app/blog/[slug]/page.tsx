@@ -59,6 +59,8 @@ import { GiscusComments } from "@/components/blog/GiscusComments";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { extractHeadings } from "@/lib/toc";
 import rehypeSlug from "rehype-slug";
+import Link from "next/link";
+import { getCategoryChain } from "@/lib/categories";
 
 const mdxComponents = {
   CyberChart: (props: any) => {
@@ -87,6 +89,7 @@ export default async function BlogPostPage({ params }: Props) {
   if (!post) notFound();
 
   const headings = extractHeadings(post.content);
+  const categoryChain = await getCategoryChain(post.categoryId ?? null);
 
   return (
     <>
@@ -110,7 +113,26 @@ export default async function BlogPostPage({ params }: Props) {
         <div>
           {/* Breadcrumb */}
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-12 font-mono text-[11px] tracking-[0.15em] text-muted">
-            <span className="shrink-0">&gt; blog</span>
+            <Link href="/blog" className="shrink-0 hover:text-black transition-colors">
+              &gt; blog
+            </Link>
+            {categoryChain.map((cat, i) => {
+              const href = `/blog/categories/${categoryChain
+                .slice(0, i + 1)
+                .map((c) => c.slug)
+                .join("/")}`;
+              return (
+                <span key={cat.id} className="flex items-center gap-x-2">
+                  <span className="shrink-0">/</span>
+                  <Link
+                    href={href}
+                    className="shrink-0 hover:text-black transition-colors"
+                  >
+                    {cat.slug}
+                  </Link>
+                </span>
+              );
+            })}
             <span className="shrink-0">/</span>
             <span className="text-black break-all">{decodeURIComponent(slug)}</span>
           </div>

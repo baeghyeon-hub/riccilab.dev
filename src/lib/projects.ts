@@ -1,6 +1,7 @@
 import { Client } from "@notionhq/client";
 import { unstable_cache } from "next/cache";
 import { getNotionPostContent } from "./notion";
+import { getAllCategories } from "./categories";
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const PROJECTS_DATA_SOURCE_ID = process.env.NOTION_PROJECTS_DATABASE_ID ?? "";
@@ -11,7 +12,9 @@ export interface Project {
   slug: string;
   title: string;
   description: string;
-  category: string;
+  categoryId: string | null;
+  /** Resolved leaf category name for display; empty when uncategorized. */
+  categoryName: string;
   tech: string[];
   status: ProjectStatus;
   featured: boolean;
@@ -37,17 +40,21 @@ export const getAllProjects = unstable_cache(
   async (): Promise<Project[]> => {
     if (!PROJECTS_DATA_SOURCE_ID) return [];
     try {
-      const response = await notion.dataSources.query({
-        data_source_id: PROJECTS_DATA_SOURCE_ID,
-        filter: {
-          property: "Published",
-          checkbox: { equals: true },
-        },
-        sorts: [
-          { property: "Order", direction: "ascending" },
-          { property: "Date", direction: "descending" },
-        ],
-      });
+      const [response, categories] = await Promise.all([
+        notion.dataSources.query({
+          data_source_id: PROJECTS_DATA_SOURCE_ID,
+          filter: {
+            property: "Published",
+            checkbox: { equals: true },
+          },
+          sorts: [
+            { property: "Order", direction: "ascending" },
+            { property: "Date", direction: "descending" },
+          ],
+        }),
+        getAllCategories(),
+      ]);
+      const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
 
       return response.results.map((page: any) => {
         const props = page.properties;
@@ -56,11 +63,18 @@ export const getAllProjects = unstable_cache(
         const slug =
           props.Slug?.rich_text?.[0]?.plain_text ?? slugify(title);
 
+        const categoryId: string | null =
+          props.Category?.relation?.[0]?.id ?? null;
+        const categoryName = categoryId
+          ? categoryNameById.get(categoryId) ?? ""
+          : "";
+
         return {
           slug,
           title,
           description: props.Description?.rich_text?.[0]?.plain_text ?? "",
-          category: props.Category?.select?.name ?? "",
+          categoryId,
+          categoryName,
           tech: props.Tech?.multi_select?.map((t: any) => t.name) ?? [],
           status: (props.Status?.select?.name ?? "") as ProjectStatus,
           featured: props.Featured?.checkbox ?? false,

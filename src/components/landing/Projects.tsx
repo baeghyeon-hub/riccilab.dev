@@ -111,7 +111,7 @@ export function Projects({ projects }: { projects: Project[] }) {
     title: p.title,
     desc: p.description,
     year: p.date ? p.date.slice(0, 4) : "",
-    role: p.category || p.status || "",
+    role: p.categoryName || p.status || "",
   }));
 
   return (

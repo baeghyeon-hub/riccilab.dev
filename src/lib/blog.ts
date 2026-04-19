@@ -11,6 +11,9 @@ export interface BlogPost {
   date: string;
   description: string;
   tags: string[];
+  categoryId: string | null;
+  /** Resolved leaf category name for display; empty when uncategorized. */
+  categoryName: string;
 }
 
 // ─── Filesystem helpers (sync, private) ──────────────────────────────
@@ -32,6 +35,8 @@ function getFilesystemPosts(): BlogPost[] {
       date: data.date || "",
       description: data.description || "",
       tags: data.tags || [],
+      categoryId: null,
+      categoryName: "",
     };
   });
 }
@@ -51,6 +56,7 @@ function getFilesystemPostBySlug(slug: string) {
     date: data.date || "",
     description: data.description || "",
     tags: data.tags || [],
+    categoryId: null,
     content,
   };
 }
@@ -91,6 +97,8 @@ export async function getPostBySlug(rawSlug: string) {
     date: notionPost.date,
     description: notionPost.description,
     tags: notionPost.tags,
+    categoryId: notionPost.categoryId,
+    categoryName: notionPost.categoryName,
     content,
   };
 }

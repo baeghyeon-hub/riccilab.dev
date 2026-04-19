@@ -14,6 +14,7 @@ import rehypeSlug from "rehype-slug";
 import { CyberChart } from "@/components/blog/CyberChart";
 import { CodeBlock } from "@/components/blog/CodeBlock";
 import { BASE_URL, SITE_NAME } from "@/lib/constants";
+import { getCategoryChain } from "@/lib/categories";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -34,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: project.title,
     description: project.description,
-    keywords: [project.category, ...project.tech].filter(Boolean),
+    keywords: [project.categoryName, ...project.tech].filter(Boolean),
     alternates: {
       canonical: `/projects/${slug}`,
     },
@@ -90,6 +91,8 @@ export default async function ProjectDetailPage({ params }: Props) {
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
 
+  const categoryChain = await getCategoryChain(project.categoryId ?? null);
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CreativeWork",
@@ -97,7 +100,7 @@ export default async function ProjectDetailPage({ params }: Props) {
     description: project.description,
     url: `${BASE_URL}/projects/${slug}`,
     dateCreated: project.date ? new Date(project.date).toISOString() : undefined,
-    keywords: [project.category, ...project.tech].filter(Boolean).join(", "),
+    keywords: [project.categoryName, ...project.tech].filter(Boolean).join(", "),
     author: {
       "@type": "Organization",
       name: SITE_NAME,
@@ -125,6 +128,23 @@ export default async function ProjectDetailPage({ params }: Props) {
             <Link href="/projects" className="shrink-0 hover:text-black transition-colors">
               &gt; projects
             </Link>
+            {categoryChain.map((cat, i) => {
+              const href = `/projects/categories/${categoryChain
+                .slice(0, i + 1)
+                .map((c) => c.slug)
+                .join("/")}`;
+              return (
+                <span key={cat.id} className="flex items-center gap-x-2">
+                  <span className="shrink-0">/</span>
+                  <Link
+                    href={href}
+                    className="shrink-0 hover:text-black transition-colors"
+                  >
+                    {cat.slug}
+                  </Link>
+                </span>
+              );
+            })}
             <span className="shrink-0">/</span>
             <span className="text-black break-all">{decodeURIComponent(slug)}</span>
           </div>
@@ -132,7 +152,7 @@ export default async function ProjectDetailPage({ params }: Props) {
           {/* Header */}
           <header className="mb-16">
             <div className="flex flex-wrap items-center gap-3 mb-4 font-mono text-[11px] tracking-[0.2em] text-muted">
-              {project.category && <span>&gt; {project.category.toUpperCase()}</span>}
+              {project.categoryName && <span>&gt; {project.categoryName.toUpperCase()}</span>}
               {project.status && (
                 <>
                   <span>|</span>

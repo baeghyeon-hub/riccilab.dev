@@ -1,6 +1,7 @@
 import { Client } from "@notionhq/client";
 import { unstable_cache } from "next/cache";
 import type { BlogPost } from "./blog";
+import { getAllCategories } from "./categories";
 import type {
   BlockObjectResponse,
   RichTextItemResponse,
@@ -195,14 +196,18 @@ export const getNotionPosts = unstable_cache(
   async (): Promise<NotionBlogPost[]> => {
     if (!DATABASE_ID) return [];
     try {
-      const response = await notion.dataSources.query({
-        data_source_id: DATABASE_ID,
-        filter: {
-          property: "Published",
-          checkbox: { equals: true },
-        },
-        sorts: [{ property: "Date", direction: "descending" }],
-      });
+      const [response, categories] = await Promise.all([
+        notion.dataSources.query({
+          data_source_id: DATABASE_ID,
+          filter: {
+            property: "Published",
+            checkbox: { equals: true },
+          },
+          sorts: [{ property: "Date", direction: "descending" }],
+        }),
+        getAllCategories(),
+      ]);
+      const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
 
       return response.results.map((page: any) => {
         const props = page.properties;
@@ -227,12 +232,20 @@ export const getNotionPosts = unstable_cache(
             .replace(/[^a-z0-9가-힣ㄱ-ㅎㅏ-ㅣ\s-]/g, "")
             .replace(/\s+/g, "-");
 
+        const categoryId: string | null =
+          props.Category?.relation?.[0]?.id ?? null;
+        const categoryName = categoryId
+          ? categoryNameById.get(categoryId) ?? ""
+          : "";
+
         return {
           slug,
           title,
           date,
           description,
           tags,
+          categoryId,
+          categoryName,
           notionPageId: page.id,
         };
       });

@@ -1,14 +1,17 @@
 import type { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/blog";
 import { getAllProjects } from "@/lib/projects";
+import { getCategoryTree, flattenTree } from "@/lib/categories";
 import { BASE_URL } from "@/lib/constants";
 
 export const revalidate = 3600; // 1시간마다 갱신
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [posts, projects] = await Promise.all([
+  const [posts, projects, blogCatTree, projectCatTree] = await Promise.all([
     getAllPosts(),
     getAllProjects(),
+    getCategoryTree("blog"),
+    getCategoryTree("projects"),
   ]);
 
   const blogEntries: MetadataRoute.Sitemap = posts.map((post) => ({
@@ -25,6 +28,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  const blogCategoryEntries: MetadataRoute.Sitemap = flattenTree(blogCatTree).map(
+    (node) => ({
+      url: `${BASE_URL}/blog/categories/${node.path.join("/")}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.6,
+    })
+  );
+
+  const projectCategoryEntries: MetadataRoute.Sitemap = flattenTree(
+    projectCatTree
+  ).map((node) => ({
+    url: `${BASE_URL}/projects/categories/${node.path.join("/")}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.6,
+  }));
+
   return [
     {
       url: BASE_URL,
@@ -39,12 +60,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: `${BASE_URL}/blog/categories`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
       url: `${BASE_URL}/projects`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    {
+      url: `${BASE_URL}/projects/categories`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
     ...blogEntries,
     ...projectEntries,
+    ...blogCategoryEntries,
+    ...projectCategoryEntries,
   ];
 }
