@@ -54,6 +54,7 @@ import rehypeKatex from "rehype-katex";
 import rehypePrettyCode from "rehype-pretty-code";
 import { CyberChart } from "@/components/blog/CyberChart";
 import { CodeBlock } from "@/components/blog/CodeBlock";
+import { MermaidDiagram } from "@/components/blog/MermaidDiagram";
 import { articleJsonLd } from "@/lib/jsonld";
 import { GiscusComments } from "@/components/blog/GiscusComments";
 import { TableOfContents } from "@/components/blog/TableOfContents";
@@ -66,6 +67,7 @@ const mdxComponents = {
   CyberChart: (props: any) => {
     return <CyberChart dataString={props.data} type={props.type || "stepAfter"} yScale={props.yScale || "linear"} />;
   },
+  Mermaid: (props: any) => <MermaidDiagram code={props.code} />,
   pre: (props: any) => <CodeBlock {...props} />,
   code: ({ className, children, ...props }: any) => {
     return <code className={className} {...props}>{children}</code>;

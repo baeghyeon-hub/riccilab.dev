@@ -13,6 +13,7 @@ import rehypePrettyCode from "rehype-pretty-code";
 import rehypeSlug from "rehype-slug";
 import { CyberChart } from "@/components/blog/CyberChart";
 import { CodeBlock } from "@/components/blog/CodeBlock";
+import { MermaidDiagram } from "@/components/blog/MermaidDiagram";
 import { BASE_URL, SITE_NAME } from "@/lib/constants";
 import { getCategoryChain } from "@/lib/categories";
 
@@ -63,6 +64,7 @@ const mdxComponents = {
       yScale={props.yScale || "linear"}
     />
   ),
+  Mermaid: (props: any) => <MermaidDiagram code={props.code} />,
   pre: (props: any) => <CodeBlock {...props} />,
   code: ({ className, children, ...props }: any) => (
     <code className={className} {...props}>

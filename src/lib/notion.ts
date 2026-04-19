@@ -120,6 +120,13 @@ async function blockToMdx(block: Block, indent = ""): Promise<string> {
         return `<CyberChart data='${data}' type="${type}" yScale="${yScale}" />\n\n`;
       }
 
+      // Special: mermaid diagrams → client-rendered SVG component.
+      // JSON.stringify gives a safely-escaped JS string literal so the
+      // diagram source survives MDX parsing unharmed (newlines, quotes, etc.).
+      if ((lang as string) === "mermaid") {
+        return `<Mermaid code={${JSON.stringify(codeText)}} />\n\n`;
+      }
+
       return `\`\`\`${lang}\n${codeText}\n\`\`\`\n\n`;
     }
 
