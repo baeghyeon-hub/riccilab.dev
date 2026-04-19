@@ -14,6 +14,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "PROJECTS",
   description: "프로젝트 갤러리 — 카테고리별 인덱스",
+  alternates: {
+    canonical: "/projects",
+  },
 };
 
 export default async function ProjectsPage() {

@@ -14,6 +14,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "BLOG",
   description: "코드와 크리에이티브의 기록 — 카테고리별 인덱스",
+  alternates: {
+    canonical: "/blog",
+  },
 };
 
 export default async function BlogPage() {
