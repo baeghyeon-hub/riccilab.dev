@@ -1,5 +1,6 @@
 import { Client } from "@notionhq/client";
 import { unstable_cache } from "next/cache";
+import { getNotionPostContent } from "./notion";
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const PROJECTS_DATA_SOURCE_ID = process.env.NOTION_PROJECTS_DATABASE_ID ?? "";
@@ -18,6 +19,11 @@ export interface Project {
   link?: string;
   github?: string;
   order: number;
+  notionPageId: string;
+}
+
+export interface ProjectWithContent extends Project {
+  content: string;
 }
 
 function slugify(title: string): string {
@@ -62,6 +68,7 @@ export const getAllProjects = unstable_cache(
           link: props.Link?.url ?? undefined,
           github: props.GitHub?.url ?? undefined,
           order: props.Order?.number ?? 999,
+          notionPageId: page.id,
         } satisfies Project;
       });
     } catch (err) {
@@ -77,4 +84,16 @@ export async function getFeaturedProjects(): Promise<Project[]> {
   const all = await getAllProjects();
   const featured = all.filter((p) => p.featured);
   return featured.length > 0 ? featured : all.slice(0, 4);
+}
+
+export async function getProjectBySlug(
+  rawSlug: string
+): Promise<ProjectWithContent | null> {
+  const slug = decodeURIComponent(rawSlug);
+  const all = await getAllProjects();
+  const project = all.find((p) => p.slug === slug);
+  if (!project) return null;
+
+  const content = await getNotionPostContent(project.notionPageId);
+  return { ...project, content };
 }
