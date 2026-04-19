@@ -23,6 +23,13 @@ const SITE = {
     surface: "#f5f5f5",
     black: "#111111",
     muted: "#777777",
+    // `chrome` is a diagram-only tone between --black and --muted.
+    // The global --muted (#777 on white / #888 on black) is calibrated
+    // for body-size meta text, but at 10–11px inside an SVG it drops
+    // below readability. This sits one step toward --black so small
+    // cluster/edge labels and dashed subgraph borders stay crisp
+    // without dominating the structural ink.
+    chrome: "#505050",
     accent: "#00aa55",
     border: "#e0e0e0",
   },
@@ -31,6 +38,7 @@ const SITE = {
     surface: "#1e1e1e",
     black: "#f0f0f0",
     muted: "#888888",
+    chrome: "#b8b8b8",
     accent: "#33cc77",
     border: "#333333",
   },
@@ -60,12 +68,14 @@ function buildThemeVariables(isDark: boolean) {
     // Flowchart specifics
     mainBkg: c.bg,
     nodeBorder: c.black,
-    // Subgraphs stay as soft chrome — dashed muted border, no fill, so
-    // they read as containers rather than another solid node.
+    // Subgraphs stay as soft chrome — dashed border, no fill, so they
+    // read as containers rather than another solid node. We use the
+    // chrome tone (not muted) because the border is 1px dashed on a
+    // bare background and needs a touch more contrast to not vanish.
     clusterBkg: "transparent",
-    clusterBorder: c.muted,
+    clusterBorder: c.chrome,
     edgeLabelBackground: c.bg,
-    titleColor: c.muted,
+    titleColor: c.chrome,
     // Type
     fontFamily: FONT_MONO,
     fontSize: "12px",
@@ -90,9 +100,9 @@ function buildThemeCSS(isDark: boolean) {
     .cluster .nodeLabel,
     .cluster text,
     .cluster-label text {
-      fill: ${c.muted} !important;
-      color: ${c.muted} !important;
-      font-size: 10px !important;
+      fill: ${c.chrome} !important;
+      color: ${c.chrome} !important;
+      font-size: 11px !important;
       letter-spacing: 0.18em !important;
       text-transform: uppercase;
       font-weight: 500;
@@ -101,10 +111,11 @@ function buildThemeCSS(isDark: boolean) {
     .edgeLabel span,
     .edgeLabel text,
     .edgeLabel foreignObject {
-      fill: ${c.muted} !important;
-      color: ${c.muted} !important;
-      font-size: 10px !important;
-      letter-spacing: 0.08em !important;
+      fill: ${c.chrome} !important;
+      color: ${c.chrome} !important;
+      font-size: 11px !important;
+      letter-spacing: 0.06em !important;
+      font-weight: 500;
     }
     .edgeLabel rect,
     .edgeLabels rect {
