@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { CustomCursor } from "@/components/ui/CustomCursor";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { LenisProvider } from "@/components/layout/LenisProvider";
 import { ScrollHUD } from "@/components/ui/ScrollHUD";
@@ -112,7 +111,6 @@ export default function RootLayout({
       <body className="min-h-screen bg-bg text-black font-[family-name:var(--font-sans)] transition-colors duration-500">
         <ThemeGlitchFilter />
         <LenisProvider>
-          <CustomCursor />
           <ScrollHUD />
           <PageTransition />
           {children}

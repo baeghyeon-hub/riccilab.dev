@@ -18,6 +18,11 @@
   --muted: #777777;
   --accent: #00aa55;
   --border: #e0e0e0;
+
+  /* Notion-style inline code tokens (light) */
+  --code-inline-fg: #d4453e;
+  --code-inline-bg: rgba(212, 69, 62, 0.08);
+  --code-inline-border: rgba(212, 69, 62, 0.18);
 }
 
 .dark {
@@ -27,6 +32,11 @@
   --muted: #888888;
   --accent: #33cc77;
   --border: #333333;
+
+  /* Notion-style inline code tokens (dark) */
+  --code-inline-fg: #ff7a6b;
+  --code-inline-bg: rgba(255, 122, 107, 0.12);
+  --code-inline-border: rgba(255, 122, 107, 0.22);
 }
 
 html.lenis, html.lenis body {
@@ -77,4 +87,44 @@ body {
   -webkit-text-stroke: 0.5px var(--color-black);
   font-variant-numeric: tabular-nums;
   image-rendering: pixelated;
+}
+
+/* ─── Inline code (Notion-style highlight) ────────────────────────── */
+/* Targets only inline <code>, not code inside <pre> (syntax blocks). */
+.prose :not(pre) > code,
+.prose :not(pre) code {
+  color: var(--code-inline-fg);
+  background: var(--code-inline-bg);
+  border: 1px solid var(--code-inline-border);
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+/* Ensure heading inline-code inherits surrounding weight. */
+.prose h1 :not(pre) > code,
+.prose h2 :not(pre) > code,
+.prose h3 :not(pre) > code,
+.prose h4 :not(pre) > code {
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+/* Blockquote inline-code gets slightly softer colors to blend. */
+.prose blockquote :not(pre) > code {
+  background: var(--code-inline-bg);
+}
+
+/* Syntax-highlighted <pre><code> blocks keep their rehype-pretty-code styling. */
+.prose pre > code {
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  font-weight: inherit;
+  font-size: inherit;
 }
