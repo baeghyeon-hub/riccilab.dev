@@ -1,4 +1,4 @@
-import { PROJECTS } from "@/lib/projects";
+import { getAllProjects } from "@/lib/projects";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { Footer } from "@/components/ui/Footer";
 import { LabBackground } from "@/components/ui/LabBackground";
@@ -11,7 +11,9 @@ export const metadata: Metadata = {
   description: "프로젝트 갤러리",
 };
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const projects = await getAllProjects();
+
   return (
     <>
       <LabBackground />
@@ -35,7 +37,7 @@ export default function ProjectsPage() {
 
             {/* Decorative data */}
             <div className="flex items-center gap-4 mt-8 font-mono text-[10px] text-muted tracking-wider">
-              <span>COUNT: {String(PROJECTS.length).padStart(2, "0")}</span>
+              <span>COUNT: {String(projects.length).padStart(2, "0")}</span>
               <span>|</span>
               <span>TYPE: MIXED</span>
               <span>|</span>
@@ -44,11 +46,19 @@ export default function ProjectsPage() {
           </div>
 
           {/* Project grid */}
-          <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-            {PROJECTS.map((project, i) => (
-              <ProjectCard key={project.id} project={project} index={i} />
-            ))}
-          </div>
+          {projects.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+              {projects.map((project, i) => (
+                <ProjectCard key={project.slug} project={project} index={i} />
+              ))}
+            </div>
+          ) : (
+            <div className="border border-border/50 p-12 text-center">
+              <p className="font-mono text-sm text-muted tracking-wider">
+                NO PROJECTS YET — STAND BY...
+              </p>
+            </div>
+          )}
         </div>
       </section>
       <Footer />

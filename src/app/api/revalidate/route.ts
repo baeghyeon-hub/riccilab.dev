@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
 
   revalidateTag("notion-posts", "max");
   revalidateTag("notion-post", "max");
+  revalidateTag("notion-projects", "max");
 
   return Response.json({ revalidated: true, now: Date.now() });
 }

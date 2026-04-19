@@ -9,8 +9,9 @@ import { Projects } from "./Projects";
 import { Notes } from "./Notes";
 import { Footer } from "@/components/ui/Footer";
 import type { BlogPost } from "@/lib/blog";
+import type { Project } from "@/lib/projects";
 
-export function PageWrapper({ posts }: { posts: BlogPost[] }) {
+export function PageWrapper({ posts, projects }: { posts: BlogPost[]; projects: Project[] }) {
   const [stage, setStage] = useState<"checking" | "loader" | "loaded">("checking");
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export function PageWrapper({ posts }: { posts: BlogPost[] }) {
         <Navigation />
         <Hero />
         <Marquee />
-        <Projects />
+        <Projects projects={projects} />
         <Notes posts={posts} />
         <Footer />
       </div>

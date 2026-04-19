@@ -1,41 +1,19 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { gsap } from "@/lib/gsap";
 import Link from "next/link";
+import type { Project } from "@/lib/projects";
 
-const PROJECTS = [
-  {
-    id: "01",
-    title: "Project Alpha",
-    desc: "인터랙티브 데이터 시각화 플랫폼",
-    year: "2025",
-    role: "Fullstack",
-  },
-  {
-    id: "02",
-    title: "Phantom UI",
-    desc: "컴포넌트 라이브러리 & 디자인 시스템",
-    year: "2024",
-    role: "Design System",
-  },
-  {
-    id: "03",
-    title: "Motion Lab",
-    desc: "제너러티브 아트와 모션 그래픽 실험",
-    year: "2024",
-    role: "Creative Dev",
-  },
-  {
-    id: "04",
-    title: "Code Heist",
-    desc: "개발자 생산성 CLI 도구",
-    year: "2023",
-    role: "Open Source",
-  },
-] as const;
+interface Row {
+  id: string;
+  title: string;
+  desc: string;
+  year: string;
+  role: string;
+}
 
-function ProjectRow({ project }: { project: (typeof PROJECTS)[number] }) {
+function ProjectRow({ project }: { project: Row }) {
   const rowRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLSpanElement>(null);
   const descRef = useRef<HTMLSpanElement>(null);
@@ -94,7 +72,7 @@ function ProjectRow({ project }: { project: (typeof PROJECTS)[number] }) {
   );
 }
 
-export function Projects() {
+export function Projects({ projects }: { projects: Project[] }) {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
 
@@ -126,6 +104,16 @@ export function Projects() {
     return () => ctx.revert();
   }, []);
 
+  if (projects.length === 0) return null;
+
+  const rows: Row[] = projects.map((p, i) => ({
+    id: String(i + 1).padStart(2, "0"),
+    title: p.title,
+    desc: p.description,
+    year: p.date ? p.date.slice(0, 4) : "",
+    role: p.category || p.status || "",
+  }));
+
   return (
     <section ref={sectionRef} className="px-6 md:px-12 lg:px-20 py-24 md:py-36">
       <div className="max-w-[1100px] w-full mx-auto">
@@ -139,7 +127,7 @@ export function Projects() {
         </div>
 
         <div className="border-t border-border">
-          {PROJECTS.map((p) => (
+          {rows.map((p) => (
             <div key={p.id} data-row>
               <ProjectRow project={p} />
             </div>

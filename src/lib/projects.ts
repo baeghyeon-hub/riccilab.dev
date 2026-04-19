@@ -1,46 +1,80 @@
+import { Client } from "@notionhq/client";
+import { unstable_cache } from "next/cache";
+
+const notion = new Client({ auth: process.env.NOTION_API_KEY });
+const PROJECTS_DATA_SOURCE_ID = process.env.NOTION_PROJECTS_DATABASE_ID ?? "";
+
+export type ProjectStatus = "WIP" | "Active" | "Released" | "Archived" | "";
+
 export interface Project {
-  id: string;
+  slug: string;
   title: string;
-  category: string;
   description: string;
+  category: string;
   tech: string[];
+  status: ProjectStatus;
+  featured: boolean;
+  date: string;
   link?: string;
   github?: string;
+  order: number;
 }
 
-export const PROJECTS: Project[] = [
-  {
-    id: "project-alpha",
-    title: "PROJECT ALPHA",
-    category: "WEB APP",
-    description: "인터랙티브 데이터 시각화 플랫폼. 실시간 데이터 스트림을 아름다운 차트로 변환합니다.",
-    tech: ["React", "D3.js", "WebSocket", "Node.js"],
-    link: "#",
-    github: "#",
+function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣ㄱ-ㅎㅏ-ㅣ\s-]/g, "")
+    .replace(/\s+/g, "-");
+}
+
+export const getAllProjects = unstable_cache(
+  async (): Promise<Project[]> => {
+    if (!PROJECTS_DATA_SOURCE_ID) return [];
+    try {
+      const response = await notion.dataSources.query({
+        data_source_id: PROJECTS_DATA_SOURCE_ID,
+        filter: {
+          property: "Published",
+          checkbox: { equals: true },
+        },
+        sorts: [
+          { property: "Order", direction: "ascending" },
+          { property: "Date", direction: "descending" },
+        ],
+      });
+
+      return response.results.map((page: any) => {
+        const props = page.properties;
+
+        const title = props.Title?.title?.[0]?.plain_text ?? "Untitled";
+        const slug =
+          props.Slug?.rich_text?.[0]?.plain_text ?? slugify(title);
+
+        return {
+          slug,
+          title,
+          description: props.Description?.rich_text?.[0]?.plain_text ?? "",
+          category: props.Category?.select?.name ?? "",
+          tech: props.Tech?.multi_select?.map((t: any) => t.name) ?? [],
+          status: (props.Status?.select?.name ?? "") as ProjectStatus,
+          featured: props.Featured?.checkbox ?? false,
+          date: props.Date?.date?.start ?? "",
+          link: props.Link?.url ?? undefined,
+          github: props.GitHub?.url ?? undefined,
+          order: props.Order?.number ?? 999,
+        } satisfies Project;
+      });
+    } catch (err) {
+      console.error("Failed to fetch Notion projects:", err);
+      return [];
+    }
   },
-  {
-    id: "phantom-ui",
-    title: "PHANTOM UI",
-    category: "DESIGN SYSTEM",
-    description: "미니멀 UI 컴포넌트 라이브러리. 타이포그래피 중심의 인터페이스 시스템.",
-    tech: ["React", "TypeScript", "Storybook", "Tailwind"],
-    link: "#",
-    github: "#",
-  },
-  {
-    id: "code-heist",
-    title: "CODE HEIST",
-    category: "OPEN SOURCE",
-    description: "개발자 생산성을 높이는 CLI 도구 모음. 반복 작업을 자동화합니다.",
-    tech: ["Rust", "CLI", "GitHub Actions"],
-    github: "#",
-  },
-  {
-    id: "motion-lab",
-    title: "MOTION LAB",
-    category: "CREATIVE CODING",
-    description: "제너러티브 아트와 모션 그래픽 실험실. Canvas와 WebGL 기반 작품들.",
-    tech: ["Three.js", "GLSL", "Canvas API"],
-    link: "#",
-  },
-];
+  ["notion-projects"],
+  { tags: ["notion-projects"], revalidate: 300 }
+);
+
+export async function getFeaturedProjects(): Promise<Project[]> {
+  const all = await getAllProjects();
+  const featured = all.filter((p) => p.featured);
+  return featured.length > 0 ? featured : all.slice(0, 4);
+}
