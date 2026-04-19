@@ -1,47 +1,43 @@
 import { getAllPosts } from "@/lib/blog";
-import { BlogCard } from "@/components/blog/BlogCard";
-import { CategoryFilter } from "@/components/categories/CategoryFilter";
-import { getCategoryTree } from "@/lib/categories";
+import { CategoryCard } from "@/components/categories/CategoryCard";
+import {
+  getCategoryTree,
+  collectSubtreeIds,
+  flattenTree,
+} from "@/lib/categories";
 import { Footer } from "@/components/ui/Footer";
 import { LabBackground } from "@/components/ui/LabBackground";
 import { GlitchTitle } from "@/components/ui/GlitchTitle";
 import { Navigation } from "@/components/layout/Navigation";
-import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "BLOG",
-  description: "코드와 크리에이티브의 기록",
+  description: "코드와 크리에이티브의 기록 — 카테고리별 인덱스",
 };
 
-interface Props {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-export default async function BlogPage({ searchParams }: Props) {
-  const { tag } = await searchParams;
-  const activeTag = typeof tag === "string" ? tag : undefined;
-
-  const [allPosts, blogRoots] = await Promise.all([
+export default async function BlogPage() {
+  const [posts, tree] = await Promise.all([
     getAllPosts(),
     getCategoryTree("blog"),
   ]);
 
-  const posts = activeTag
-    ? allPosts.filter((p) => p.tags.includes(activeTag))
-    : allPosts;
+  const allNodes = flattenTree(tree);
+  const countForNode = (nodeIds: string[]) =>
+    posts.filter((p) => p.categoryId && nodeIds.includes(p.categoryId)).length;
+  const totalClassified = posts.filter((p) => p.categoryId).length;
 
   return (
     <>
       <LabBackground />
       <Navigation />
       <section className="relative min-h-screen pt-32 pb-20 px-6 md:px-16">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="mb-20">
             <div className="flex items-center gap-3 mb-6">
               <span className="font-mono text-[11px] tracking-[0.2em] text-muted">
-                &gt; cd /lab/notes
+                &gt; ls /lab/notes/by-category
               </span>
               <div className="h-px flex-1 bg-border" />
             </div>
@@ -49,51 +45,38 @@ export default async function BlogPage({ searchParams }: Props) {
             <GlitchTitle text="BLOG" />
 
             <p className="font-mono text-sm tracking-wider text-muted mt-6">
-              THOUGHTS, CODE &amp; CREATIVE NOTES
+              THOUGHTS, CODE &amp; CREATIVE NOTES — BROWSE BY CATEGORY
             </p>
 
-            {/* Decorative data line */}
             <div className="flex items-center gap-4 mt-8 font-mono text-[10px] text-muted tracking-wider">
-              <span>ENTRIES: {String(posts.length).padStart(3, "0")}</span>
+              <span>TOPICS: {String(allNodes.length).padStart(3, "0")}</span>
+              <span>|</span>
+              <span>
+                CLASSIFIED: {String(totalClassified).padStart(3, "0")}/
+                {String(posts.length).padStart(3, "0")}
+              </span>
               <span>|</span>
               <span>STATUS: ACTIVE</span>
-              <span>|</span>
-              <span>FREQ: IRREGULAR</span>
             </div>
           </div>
 
-          {/* Category filter (top-level categories from Notion) */}
-          <CategoryFilter
-            basePath="/blog"
-            categoryBase="/blog/categories"
-            roots={blogRoots}
-          />
-
-          {/* Active tag indicator (tags are a secondary filter via ?tag=) */}
-          {activeTag && (
-            <div className="flex items-center gap-3 mb-8 font-mono text-[11px] tracking-wider">
-              <span className="text-muted">FILTERED BY TAG:</span>
-              <span className="text-black">_{activeTag.toUpperCase()}</span>
-              <Link
-                href="/blog"
-                className="text-muted hover:text-black transition-colors underline underline-offset-4"
-              >
-                [CLEAR]
-              </Link>
-            </div>
-          )}
-
-          {/* Post list */}
-          {posts.length > 0 ? (
-            <div className="border-t border-border">
-              {posts.map((post, i) => (
-                <BlogCard key={post.slug} post={post} index={i} />
+          {/* Top-level category grid */}
+          {tree.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-6">
+              {tree.map((node, i) => (
+                <CategoryCard
+                  key={node.id}
+                  node={node}
+                  basePath="/blog/categories"
+                  count={countForNode(collectSubtreeIds(node))}
+                  index={i}
+                />
               ))}
             </div>
           ) : (
             <div className="border border-border/50 p-12 text-center">
               <p className="font-mono text-sm text-muted tracking-wider">
-                NO ENTRIES FOUND — SIGNAL PENDING...
+                NO CATEGORIES YET — AWAITING INPUT
               </p>
             </div>
           )}

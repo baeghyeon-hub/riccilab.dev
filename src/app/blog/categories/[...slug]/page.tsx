@@ -77,13 +77,6 @@ export default async function BlogCategoryPage({ params }: Props) {
             <Link href="/blog" className="shrink-0 hover:text-black transition-colors">
               &gt; blog
             </Link>
-            <span className="shrink-0">/</span>
-            <Link
-              href="/blog/categories"
-              className="shrink-0 hover:text-black transition-colors"
-            >
-              categories
-            </Link>
             {crumbs.map((c) => (
               <span key={c.href} className="flex items-center gap-x-2">
                 <span className="shrink-0">/</span>

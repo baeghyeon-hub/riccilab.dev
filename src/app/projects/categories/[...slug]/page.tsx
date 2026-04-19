@@ -78,13 +78,6 @@ export default async function ProjectCategoryPage({ params }: Props) {
             >
               &gt; projects
             </Link>
-            <span className="shrink-0">/</span>
-            <Link
-              href="/projects/categories"
-              className="shrink-0 hover:text-black transition-colors"
-            >
-              categories
-            </Link>
             {crumbs.map((c) => (
               <span key={c.href} className="flex items-center gap-x-2">
                 <span className="shrink-0">/</span>
