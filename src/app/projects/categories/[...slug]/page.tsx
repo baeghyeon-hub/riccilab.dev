@@ -3,6 +3,7 @@ import { LabBackground } from "@/components/ui/LabBackground";
 import { Navigation } from "@/components/layout/Navigation";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { CategoryCard } from "@/components/categories/CategoryCard";
+import { CategoryFilter } from "@/components/categories/CategoryFilter";
 import {
   getCategoryTree,
   resolveCategoryPath,
@@ -43,14 +44,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProjectCategoryPage({ params }: Props) {
   const { slug } = await params;
-  const node = await resolveCategoryPath(slug, "projects");
+  const [node, allProjects, projectRoots] = await Promise.all([
+    resolveCategoryPath(slug, "projects"),
+    getAllProjects(),
+    getCategoryTree("projects"),
+  ]);
   if (!node) notFound();
 
-  const allProjects = await getAllProjects();
   const subtreeIds = collectSubtreeIds(node);
   const projects = allProjects.filter(
     (p) => p.categoryId && subtreeIds.includes(p.categoryId)
   );
+
+  const activeRootSlug = slug[0];
 
   const crumbs = slug.map((seg, i) => ({
     seg,
@@ -95,6 +101,14 @@ export default async function ProjectCategoryPage({ params }: Props) {
               </span>
             ))}
           </div>
+
+          {/* Category filter tabs */}
+          <CategoryFilter
+            basePath="/projects"
+            categoryBase="/projects/categories"
+            roots={projectRoots}
+            activeSlug={activeRootSlug}
+          />
 
           {/* Header */}
           <header className="mb-16">

@@ -55,11 +55,16 @@ export function BlogCard({ post, index = 0 }: { post: BlogPost; index?: number }
       onMouseEnter={glitch}
       className="group block border-b border-border py-8 md:py-10 opacity-0 hover:pl-4 transition-all duration-300"
     >
-      {/* Date + Index */}
-      <div className="flex items-center gap-4 mb-3">
+      {/* Date + Category + Index */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-3">
         <span className="font-mono text-[11px] tracking-[0.15em] text-muted">
           {post.date}
         </span>
+        {post.categoryName && (
+          <span className="font-mono text-[10px] tracking-[0.2em] text-muted">
+            &gt; {post.categoryName.toUpperCase()}
+          </span>
+        )}
         <span className="font-mono text-[10px] text-muted">
           #{String(index + 1).padStart(2, "0")}
         </span>

@@ -1,5 +1,7 @@
 import { getAllProjects } from "@/lib/projects";
 import { ProjectCard } from "@/components/projects/ProjectCard";
+import { CategoryFilter } from "@/components/categories/CategoryFilter";
+import { getCategoryTree } from "@/lib/categories";
 import { Footer } from "@/components/ui/Footer";
 import { LabBackground } from "@/components/ui/LabBackground";
 import { GlitchTitle } from "@/components/ui/GlitchTitle";
@@ -12,7 +14,10 @@ export const metadata: Metadata = {
 };
 
 export default async function ProjectsPage() {
-  const projects = await getAllProjects();
+  const [projects, projectRoots] = await Promise.all([
+    getAllProjects(),
+    getCategoryTree("projects"),
+  ]);
 
   return (
     <>
@@ -44,6 +49,13 @@ export default async function ProjectsPage() {
               <span>STATUS: IN PROGRESS</span>
             </div>
           </div>
+
+          {/* Category filter (top-level categories from Notion) */}
+          <CategoryFilter
+            basePath="/projects"
+            categoryBase="/projects/categories"
+            roots={projectRoots}
+          />
 
           {/* Project grid */}
           {projects.length > 0 ? (

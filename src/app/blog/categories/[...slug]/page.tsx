@@ -3,6 +3,7 @@ import { LabBackground } from "@/components/ui/LabBackground";
 import { Navigation } from "@/components/layout/Navigation";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { CategoryCard } from "@/components/categories/CategoryCard";
+import { CategoryFilter } from "@/components/categories/CategoryFilter";
 import {
   getCategoryTree,
   resolveCategoryPath,
@@ -44,14 +45,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogCategoryPage({ params }: Props) {
   const { slug } = await params;
-  const node = await resolveCategoryPath(slug, "blog");
+  const [node, allPosts, blogRoots] = await Promise.all([
+    resolveCategoryPath(slug, "blog"),
+    getAllPosts(),
+    getCategoryTree("blog"),
+  ]);
   if (!node) notFound();
 
-  const allPosts = await getAllPosts();
   const subtreeIds = collectSubtreeIds(node);
   const posts = allPosts
     .filter((p) => p.categoryId && subtreeIds.includes(p.categoryId))
     .sort((a, b) => (a.date > b.date ? -1 : 1));
+
+  const activeRootSlug = slug[0];
 
   // Build breadcrumb links from path
   const crumbs = slug.map((seg, i) => ({
@@ -94,6 +100,14 @@ export default async function BlogCategoryPage({ params }: Props) {
               </span>
             ))}
           </div>
+
+          {/* Category filter tabs */}
+          <CategoryFilter
+            basePath="/blog"
+            categoryBase="/blog/categories"
+            roots={blogRoots}
+            activeSlug={activeRootSlug}
+          />
 
           {/* Header */}
           <header className="mb-16">

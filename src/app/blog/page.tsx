@@ -1,10 +1,12 @@
 import { getAllPosts } from "@/lib/blog";
 import { BlogCard } from "@/components/blog/BlogCard";
-import { TagFilter } from "@/components/blog/TagFilter";
+import { CategoryFilter } from "@/components/categories/CategoryFilter";
+import { getCategoryTree } from "@/lib/categories";
 import { Footer } from "@/components/ui/Footer";
 import { LabBackground } from "@/components/ui/LabBackground";
 import { GlitchTitle } from "@/components/ui/GlitchTitle";
 import { Navigation } from "@/components/layout/Navigation";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -19,8 +21,12 @@ interface Props {
 export default async function BlogPage({ searchParams }: Props) {
   const { tag } = await searchParams;
   const activeTag = typeof tag === "string" ? tag : undefined;
-  const allPosts = await getAllPosts();
-  const allTags = [...new Set(allPosts.flatMap((p) => p.tags))].sort();
+
+  const [allPosts, blogRoots] = await Promise.all([
+    getAllPosts(),
+    getCategoryTree("blog"),
+  ]);
+
   const posts = activeTag
     ? allPosts.filter((p) => p.tags.includes(activeTag))
     : allPosts;
@@ -56,8 +62,26 @@ export default async function BlogPage({ searchParams }: Props) {
             </div>
           </div>
 
-          {/* Tag filter */}
-          <TagFilter tags={allTags} activeTag={activeTag} />
+          {/* Category filter (top-level categories from Notion) */}
+          <CategoryFilter
+            basePath="/blog"
+            categoryBase="/blog/categories"
+            roots={blogRoots}
+          />
+
+          {/* Active tag indicator (tags are a secondary filter via ?tag=) */}
+          {activeTag && (
+            <div className="flex items-center gap-3 mb-8 font-mono text-[11px] tracking-wider">
+              <span className="text-muted">FILTERED BY TAG:</span>
+              <span className="text-black">_{activeTag.toUpperCase()}</span>
+              <Link
+                href="/blog"
+                className="text-muted hover:text-black transition-colors underline underline-offset-4"
+              >
+                [CLEAR]
+              </Link>
+            </div>
+          )}
 
           {/* Post list */}
           {posts.length > 0 ? (
