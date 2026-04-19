@@ -8,7 +8,10 @@
   --color-accent: var(--accent);
   --color-border: var(--border);
 
-  --font-sans: "Pretendard Variable", Pretendard, "Inter", system-ui, sans-serif;
+  /* Body sans chain: CodeNewRoman Nerd Font (Propo) handles Latin, then
+     Pretendard Variable picks up Korean per-character since CodeNewRoman
+     has no CJK glyphs. system-ui is the final safety net. */
+  --font-sans: var(--font-code-new-roman), "Pretendard Variable", Pretendard, system-ui, sans-serif;
 }
 
 :root {

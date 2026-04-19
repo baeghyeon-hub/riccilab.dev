@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { LenisProvider } from "@/components/layout/LenisProvider";
 import { ScrollHUD } from "@/components/ui/ScrollHUD";
@@ -8,11 +8,33 @@ import { BASE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/constants";
 import { organizationJsonLd } from "@/lib/jsonld";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-  variable: "--font-sans",
+// CodeNewRoman Nerd Font (Propo variant) — proportional Nerd Fonts patch
+// designed for body prose. We subset to Latin + Latin-1 + general
+// punctuation + box-drawing only (nerd-icon glyphs dropped), which cuts
+// each weight from ~6.5MB down to ~45KB woff2. Korean characters fall
+// back per-glyph to Pretendard via the CSS chain in globals.css.
+const codeNewRoman = localFont({
+  src: [
+    {
+      path: "./fonts/CodeNewRomanPropo-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/CodeNewRomanPropo-Italic.woff2",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "./fonts/CodeNewRomanPropo-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-code-new-roman",
   display: "swap",
+  preload: true,
+  fallback: ["Pretendard Variable", "Pretendard", "system-ui", "sans-serif"],
 });
 
 export const viewport: Viewport = {
@@ -77,7 +99,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${inter.variable}`} suppressHydrationWarning>
+    <html lang="ko" className={codeNewRoman.variable} suppressHydrationWarning>
       <head>
         <link
           rel="preload"
