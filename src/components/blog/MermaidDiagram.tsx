@@ -41,25 +41,29 @@ function buildThemeVariables(isDark: boolean) {
   return {
     // Canvas
     background: "transparent",
-    // Primary node
-    primaryColor: c.surface,
+    // Primary node — high-contrast outline so structure reads at a glance.
+    // We use --black for borders/lines (the same ink used for body text)
+    // because --border (#e0e0e0) and --muted (#777) are too faint on a
+    // white page once stroke-width drops to 1px.
+    primaryColor: c.bg,
     primaryTextColor: c.black,
-    primaryBorderColor: c.border,
-    // Secondary / tertiary (used by subgraphs, alternate nodes)
+    primaryBorderColor: c.black,
     secondaryColor: c.bg,
-    secondaryTextColor: c.muted,
-    secondaryBorderColor: c.border,
+    secondaryTextColor: c.black,
+    secondaryBorderColor: c.black,
     tertiaryColor: c.bg,
-    tertiaryTextColor: c.muted,
-    tertiaryBorderColor: c.border,
+    tertiaryTextColor: c.black,
+    tertiaryBorderColor: c.black,
     // Edges
-    lineColor: c.muted,
+    lineColor: c.black,
     textColor: c.black,
     // Flowchart specifics
-    mainBkg: c.surface,
-    nodeBorder: c.border,
-    clusterBkg: isDark ? "#141414" : "#fafafa",
-    clusterBorder: c.border,
+    mainBkg: c.bg,
+    nodeBorder: c.black,
+    // Subgraphs stay as soft chrome — dashed muted border, no fill, so
+    // they read as containers rather than another solid node.
+    clusterBkg: "transparent",
+    clusterBorder: c.muted,
     edgeLabelBackground: c.bg,
     titleColor: c.muted,
     // Type
@@ -69,58 +73,78 @@ function buildThemeVariables(isDark: boolean) {
 }
 
 /**
- * Extra stylistic touches that theme variables can't express — dashed
- * subgraph borders, uppercase/tracked cluster labels, thin 1px strokes
- * everywhere, and a small-caps feel for edge labels.
+ * themeCSS is rebuilt per render because SVG `fill` needs explicit color
+ * values — theme variables alone don't force cluster labels / edge
+ * labels onto the muted tone we want, especially across dark-mode toggles.
  */
-const THEME_CSS = `
-  .cluster > rect {
-    stroke-dasharray: 2 3;
-    stroke-width: 1px;
-    rx: 2;
-    ry: 2;
-  }
-  .cluster .cluster-label,
-  .cluster .nodeLabel,
-  .cluster text {
-    font-size: 10px !important;
-    letter-spacing: 0.18em !important;
-    text-transform: uppercase;
-    font-weight: 500;
-  }
-  .edgeLabel,
-  .edgeLabel span,
-  .edgeLabel foreignObject {
-    font-size: 10px !important;
-    letter-spacing: 0.08em !important;
-  }
-  .node rect,
-  .node polygon,
-  .node circle,
-  .node ellipse,
-  .node path {
-    stroke-width: 1px;
-    rx: 2;
-    ry: 2;
-  }
-  .flowchart-link,
-  .messageLine0,
-  .messageLine1,
-  .relationshipLine,
-  .transition {
-    stroke-width: 1px;
-  }
-  .marker,
-  .arrowheadPath {
-    stroke-width: 1px;
-  }
-  .nodeLabel,
-  .nodeLabel p {
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    margin: 0;
-  }
-`;
+function buildThemeCSS(isDark: boolean) {
+  const c = isDark ? SITE.dark : SITE.light;
+  return `
+    .cluster > rect {
+      stroke-dasharray: 2 3;
+      stroke-width: 1px;
+      rx: 2;
+      ry: 2;
+    }
+    .cluster .cluster-label,
+    .cluster .nodeLabel,
+    .cluster text,
+    .cluster-label text {
+      fill: ${c.muted} !important;
+      color: ${c.muted} !important;
+      font-size: 10px !important;
+      letter-spacing: 0.18em !important;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .edgeLabel,
+    .edgeLabel span,
+    .edgeLabel text,
+    .edgeLabel foreignObject {
+      fill: ${c.muted} !important;
+      color: ${c.muted} !important;
+      font-size: 10px !important;
+      letter-spacing: 0.08em !important;
+    }
+    .edgeLabel rect,
+    .edgeLabels rect {
+      fill: ${c.bg} !important;
+    }
+    .node rect,
+    .node polygon,
+    .node circle,
+    .node ellipse,
+    .node path {
+      stroke-width: 1px;
+      rx: 2;
+      ry: 2;
+    }
+    .node .label,
+    .nodeLabel,
+    .nodeLabel p {
+      fill: ${c.black} !important;
+      color: ${c.black} !important;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      margin: 0;
+    }
+    .flowchart-link,
+    .messageLine0,
+    .messageLine1,
+    .relationshipLine,
+    .transition {
+      stroke: ${c.black} !important;
+      stroke-width: 1px;
+    }
+    .marker,
+    .arrowheadPath,
+    .flowchart-link + defs marker path {
+      fill: ${c.black} !important;
+      stroke: ${c.black} !important;
+      stroke-width: 1px;
+    }
+  `;
+}
 
 export function MermaidDiagram({ code }: Props) {
   const [svg, setSvg] = useState<string>("");
@@ -142,7 +166,7 @@ export function MermaidDiagram({ code }: Props) {
           theme: "base",
           fontFamily: FONT_MONO,
           themeVariables: buildThemeVariables(isDark),
-          themeCSS: THEME_CSS,
+          themeCSS: buildThemeCSS(isDark),
           flowchart: {
             curve: "linear",
             padding: 14,
@@ -198,12 +222,12 @@ export function MermaidDiagram({ code }: Props) {
 
   return (
     <figure className="my-10">
-      <div className="relative border border-border bg-bg/40 px-4 pt-8 pb-6 md:pt-10 md:pb-8 overflow-x-auto">
+      <div className="relative border border-black/20 dark:border-white/15 bg-bg/40 px-4 pt-8 pb-6 md:pt-10 md:pb-8 overflow-x-auto">
         {/* Corner telemetry labels — blend with the site's cyber-lab chrome */}
-        <span className="pointer-events-none absolute top-2 left-3 select-none font-mono text-[9px] tracking-[0.25em] text-muted/60">
+        <span className="pointer-events-none absolute top-2 left-3 select-none font-mono text-[9px] tracking-[0.25em] text-muted">
           &gt; DIAGRAM
         </span>
-        <span className="pointer-events-none absolute top-2 right-3 select-none font-mono text-[9px] tracking-[0.25em] text-muted/60">
+        <span className="pointer-events-none absolute top-2 right-3 select-none font-mono text-[9px] tracking-[0.25em] text-muted">
           MERMAID.RENDER
         </span>
         <div
