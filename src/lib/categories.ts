@@ -31,8 +31,18 @@ export interface CategoryNode extends Category {
   pathIds: string[];
 }
 
+// Slug sanitizer applied both to Notion-provided slugs and to URL segments
+// before lookup, so authors don't have to hand-craft URL-safe strings.
+// Strips everything that isn't ASCII alphanumeric / Hangul / space / hyphen,
+// collapses whitespace to hyphens, and tidies duplicate/edge hyphens.
 function normalizeSlug(raw: string): string {
-  return raw.trim().toLowerCase();
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣\s-]/g, "") // drop punctuation and symbols
+    .replace(/\s+/g, "-") // spaces → hyphens
+    .replace(/-+/g, "-") // collapse consecutive hyphens
+    .replace(/^-+|-+$/g, ""); // trim leading/trailing hyphens
 }
 
 // ─── Notion query ────────────────────────────────────────────────────
