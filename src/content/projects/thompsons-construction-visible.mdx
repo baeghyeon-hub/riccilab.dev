@@ -2,7 +2,7 @@
 title: "Thompson's Construction, Visible"
 date: 2026-04-20
 category: regex-viz
-description: "regex 를 그래프가 아니라 타임라인으로 봅니다. Stage 1 — NFA 가 자라는 여섯 규칙을, slider 로 스크럽해서 직접 돌려보기."
+description: "regex 를 그래프가 아니라 타임라인으로 보기. Stage 1 — NFA 가 자라는 여섯 규칙을, slider 로 스크럽해서 직접 돌려보기."
 tech: ["Rust", "TypeScript", "React", "MDX", "dagre"]
 status: Active
 github: "https://github.com/Ricci-curvature/regex-viz"
@@ -22,25 +22,25 @@ import traceAorBStarC from "@/artifacts/regex-viz/stage01/a_or_b_star_c.json";
 >
 > regex 의 어려움은 구조가 아닙니다. _시간_ 입니다. NFA 가 AST 를 따라 어떻게 자라는지, active state 집합이 입력 한 글자마다 어떻게 퍼져나가는지, backtracking 이 언제 폭발하는지. 이건 정지 이미지로는 보이지 않습니다.
 >
-> `regex-viz` 는 그 빈자리를 채우려는 프로젝트입니다. regex 를 **타임라인** 으로 봅니다. 그리고 이 블로그는 정지 이미지가 아니라 **스크럽 가능한 시각화** 로 보여주기로 합니다. 그게 MDX 를 쓰는 이유.
+> `regex-viz` 는 그 빈자리를 채우려는 프로젝트입니다. regex 를 **타임라인** 으로 봅니다. 그리고 이 블로그는 정지 이미지가 아니라 **스크럽 가능한 시각화** 로 보여줍니다. 그게 MDX 를 쓰는 이유.
 
 아래 뷰어의 slider 를 움직여 봅시다. `a|b*c` 가 여섯 step 을 거쳐 완성되는 과정입니다.
 
 <TraceViewer trace={traceAorBStarC} />
 
-상자 하나가 한 AST 노드의 emit 결과입니다. 왼쪽에서 시작한 `a` 조각과 오른쪽의 `b*c` 조각이 마지막 step (`alternation`) 에서 네 개의 ε 로 감싸지는 순간이 이 글의 핵심. 어떻게 저기까지 갔는지, 코드 차원에서 따라가봅시다.
+상자 하나가 한 AST 노드의 emit 결과입니다. 왼쪽에서 시작한 `a` 조각과 오른쪽의 `b*c` 조각이 마지막 step (`alternation`) 에서 네 개의 ε 로 감싸지는 순간이 이 글의 핵심. 어떻게 저기까지 갔는지, 코드 차원에서 따라갑니다.
 
 ---
 
 ## 프로젝트의 한 줄
 
-> **Rust 가 계산한다. MDX 가 설명한다. SVG 가 설득합니다.**
+> **Rust 가 계산한다. MDX 가 설명한다. SVG 가 설득한다.**
 
 세 층, 각 층마다 한 가지 규율만 지킵니다.
 
-- **Rust crate + CLI** — regex 파싱, NFA/DFA 구축, 매칭. `regex` crate 금지. `nom`/`chumsky` 금지. 바닥부터 짠다. 이 프로젝트의 존재 이유가 "내부가 보이게" 이므로, 편하자고 `regex` 를 import 하는 순간 목적 상실.
-- **구조화된 Trace JSON** — 모든 stage 가 Trace 를 emit 한다. step 의 시퀀스, 각 step 은 NFA 스냅샷 하나와 active state 집합 하나. Build trace (NFA 가 자라는 과정) 와 Run trace (NFA 는 고정, active 가 변함) 가 **하나의 포맷을 공유** 합니다.
-- **React `TraceViewer` 컴포넌트** — 200 줄 언저리. trace.json 을 받아 dagre 로 레이아웃 계산하고 SVG 를 직접 렌더. step slider 달아서 독자가 시간을 스크럽 한다. 위의 뷰어가 그것.
+- **Rust crate + CLI** — regex 파싱, NFA/DFA 구축, 매칭. `regex` crate 금지. `nom`/`chumsky` 금지. 바닥부터 짭니다. 이 프로젝트의 존재 이유가 "내부가 보이게" 이므로, 편하자고 `regex` 를 import 하는 순간 목적 상실.
+- **구조화된 Trace JSON** — 모든 stage 가 Trace 를 emit 합니다. step 의 시퀀스, 각 step 은 NFA 스냅샷 하나와 active state 집합 하나. Build trace (NFA 가 자라는 과정) 와 Run trace (NFA 는 고정, active 가 변함) 가 **하나의 포맷을 공유** 합니다.
+- **React `TraceViewer` 컴포넌트** — 200 줄 언저리. trace.json 을 받아 dagre 로 레이아웃 계산하고 SVG 를 직접 렌더. step slider 달아서 독자가 시간을 스크럽 합니다. 위의 뷰어가 그것.
 - **MDX 포스트** — 서술 + `<TraceViewer trace={...} />` 를 inline embed. 이 글이 그 첫 번째 입니다.
 
 Repo: [github.com/Ricci-curvature/regex-viz](https://github.com/Ricci-curvature/regex-viz)
