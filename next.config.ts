@@ -49,8 +49,25 @@ const nextConfig: NextConfig = {
   },
 };
 
+// Same plugin stack as the runtime MDXRemote path in blog/[slug] and
+// projects/[slug], so filesystem MDX (compiled at build time by @next/mdx)
+// and Notion MDX (rendered at request time by next-mdx-remote) end up
+// identically highlighted, slugified, and math-rendered. Without this,
+// fs MDX code blocks render as unstyled plain text.
+//
+// Turbopack requires plugin options to be serializable, so we pass module
+// paths as strings rather than imported function references — webpack also
+// accepts this form. rehype-pretty-code gets its theme option inline.
 const withMDX = createMDX({
   extension: /\.mdx?$/,
+  options: {
+    remarkPlugins: ["remark-gfm", "remark-math"],
+    rehypePlugins: [
+      "rehype-slug",
+      "rehype-katex",
+      ["rehype-pretty-code", { theme: "vitesse-dark" }],
+    ],
+  },
 });
 
 export default withMDX(nextConfig);

@@ -1,8 +1,9 @@
 "use client";
 
 // NfaGraph — dagre computes layout, SVG is rendered by hand.
-// Deliberately unstyled beyond minimal inline styles so the consuming site's
-// theme (riccilab.dev) can override via CSS class selectors on the wrapper.
+// Colors wired to the site's CSS variables so the graph tracks light/dark
+// theme without extra JS. Active-state accent reuses --code-inline-fg so the
+// scrubbed highlight matches inline code pills elsewhere in the prose.
 //
 // Vendored from github.com/Ricci-curvature/regex-viz (viz/NfaGraph.tsx).
 
@@ -38,7 +39,15 @@ export function NfaGraph({ nfa, active = [], className }: NfaGraphProps) {
       viewBox={`0 0 ${layout.width} ${layout.height}`}
       width={layout.width}
       height={layout.height}
-      style={{ maxWidth: "100%", height: "auto", fontFamily: "ui-monospace, monospace" }}
+      style={{
+        maxWidth: "100%",
+        height: "auto",
+        // Body sans already resolves to the CodeNewRoman mono stack, but
+        // force monospace here to keep single-char state ids aligned.
+        fontFamily:
+          "var(--font-sans), ui-monospace, SFMono-Regular, Menlo, monospace",
+        color: "var(--color-black)",
+      }}
     >
       <defs>
         <marker
@@ -50,7 +59,18 @@ export function NfaGraph({ nfa, active = [], className }: NfaGraphProps) {
           markerHeight="6"
           orient="auto"
         >
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="#555" />
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+        </marker>
+        <marker
+          id="regex-viz-arrow-eps"
+          viewBox="0 0 10 10"
+          refX="9"
+          refY="5"
+          markerWidth="6"
+          markerHeight="6"
+          orient="auto"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--color-muted)" />
         </marker>
       </defs>
 
@@ -62,18 +82,23 @@ export function NfaGraph({ nfa, active = [], className }: NfaGraphProps) {
             <path
               d={pointsToPath(e.points)}
               fill="none"
-              stroke={isEps ? "#b8b8b8" : "#555"}
-              strokeWidth={1.5}
+              stroke={isEps ? "var(--color-muted)" : "currentColor"}
+              strokeOpacity={isEps ? 0.7 : 0.8}
+              strokeWidth={1.4}
               strokeDasharray={isEps ? "4 3" : undefined}
-              markerEnd="url(#regex-viz-arrow)"
+              markerEnd={
+                isEps
+                  ? "url(#regex-viz-arrow-eps)"
+                  : "url(#regex-viz-arrow)"
+              }
             />
             <text
               x={mid.x}
               y={mid.y - 5}
               textAnchor="middle"
               fontSize="12"
-              fill={isEps ? "#888" : "#222"}
-              stroke="white"
+              fill={isEps ? "var(--color-muted)" : "currentColor"}
+              stroke="var(--color-bg)"
               strokeWidth="3"
               paintOrder="stroke"
             >
@@ -87,7 +112,17 @@ export function NfaGraph({ nfa, active = [], className }: NfaGraphProps) {
         const isStart = n.id === nfa.start;
         const isAccept = n.id === nfa.accept;
         const isActive = activeSet.has(n.id);
-        const fill = isActive ? "#ffd866" : isStart ? "#d3e4ff" : "#ffffff";
+        // Active node: coral accent matching inline-code pills. Start node:
+        // subtle surface tint so the entry point is visible without
+        // competing with active/accept markings.
+        const fill = isActive
+          ? "var(--code-inline-bg)"
+          : isStart
+          ? "var(--color-surface)"
+          : "var(--color-bg)";
+        const stroke = isActive
+          ? "var(--code-inline-fg)"
+          : "currentColor";
         return (
           <g key={n.id}>
             {isAccept && (
@@ -96,17 +131,26 @@ export function NfaGraph({ nfa, active = [], className }: NfaGraphProps) {
                 cy={n.y}
                 r={NODE_R + 3}
                 fill="none"
-                stroke="#222"
-                strokeWidth={1.5}
+                stroke="currentColor"
+                strokeWidth={1.2}
+                strokeOpacity={0.8}
               />
             )}
-            <circle cx={n.x} cy={n.y} r={NODE_R} fill={fill} stroke="#222" strokeWidth={1.5} />
+            <circle
+              cx={n.x}
+              cy={n.y}
+              r={NODE_R}
+              fill={fill}
+              stroke={stroke}
+              strokeWidth={isActive ? 1.8 : 1.4}
+            />
             <text
               x={n.x}
               y={n.y + 4}
               textAnchor="middle"
               fontSize="13"
               fontWeight={500}
+              fill="currentColor"
             >
               {n.id}
             </text>
