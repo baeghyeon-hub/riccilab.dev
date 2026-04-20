@@ -14,6 +14,8 @@ import rehypeSlug from "rehype-slug";
 import { CyberChart } from "@/components/blog/CyberChart";
 import { CodeBlock } from "@/components/blog/CodeBlock";
 import { MermaidDiagram } from "@/components/blog/MermaidDiagram";
+import { TraceViewer } from "@/components/regex-viz/TraceViewer";
+import { fsProjectComponents } from "@/lib/fs-projects-registry";
 import { BASE_URL, SITE_NAME } from "@/lib/constants";
 import { getCategoryChain } from "@/lib/categories";
 
@@ -57,6 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const mdxComponents = {
+  TraceViewer,
   CyberChart: (props: any) => (
     <CyberChart
       dataString={props.data}
@@ -97,6 +100,56 @@ const mdxComponents = {
     </div>
   ),
 };
+
+// Shared prose wrapper; same Tailwind arbitrary-selector stack as the blog
+// detail page — kept inline rather than abstracted so rebalancing typography
+// in one place only touches that page.
+const PROSE_CLASS =
+  "prose prose-neutral max-w-none overflow-hidden text-black/90 leading-[1.85] text-base md:text-lg [&_p]:mb-5 [&_p]:mt-0 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-black [&_h1]:mt-14 [&_h1]:mb-6 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-black [&_h2]:mt-14 [&_h2]:mb-6 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-black [&_h3]:mt-10 [&_h3]:mb-4 [&_blockquote]:border-l-2 [&_blockquote]:border-black/20 [&_blockquote]:pl-6 [&_blockquote]:my-8 [&_blockquote]:italic [&_blockquote]:text-muted [&_a]:text-black [&_a]:underline [&_a]:underline-offset-4 [&_strong]:text-black [&_ul]:my-5 [&_ul]:space-y-2 [&_li]:text-black/80 [&_pre]:bg-[#121212] [&_pre]:text-white/90 [&_pre]:p-4 [&_pre]:md:p-5 [&_pre]:my-8 [&_pre]:md:my-10 [&_pre]:rounded-xl [&_pre]:overflow-x-auto [&_pre]:text-xs [&_pre]:md:text-sm [&_pre]:shadow-lg [&_pre]:leading-relaxed [&_pre]:tracking-wide [&_pre]:max-w-full";
+
+// Branch on source: filesystem MDX projects are compiled via @next/mdx so
+// their top-level `import` / JSON imports resolve through webpack, while
+// Notion-sourced strings go through next-mdx-remote without a bundler pass.
+async function renderProjectContent(slug: string, content: string) {
+  const fsLoader = fsProjectComponents[slug];
+  if (fsLoader) {
+    const { default: MdxContent } = await fsLoader();
+    return (
+      <div className={PROSE_CLASS}>
+        <MdxContent components={mdxComponents} />
+      </div>
+    );
+  }
+
+  if (content.trim().length === 0) {
+    return (
+      <div className="border border-border/50 p-12 text-center">
+        <p className="font-mono text-sm text-muted tracking-wider">
+          NO CONTENT YET — DETAILS COMING SOON
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={PROSE_CLASS}>
+      <MDXRemote
+        source={content}
+        components={mdxComponents}
+        options={{
+          mdxOptions: {
+            remarkPlugins: [remarkGfm, remarkMath],
+            rehypePlugins: [
+              rehypeSlug,
+              rehypeKatex,
+              [rehypePrettyCode, { theme: "vitesse-dark" }],
+            ],
+          },
+        }}
+      />
+    </div>
+  );
+}
 
 export default async function ProjectDetailPage({ params }: Props) {
   const { slug } = await params;
@@ -233,30 +286,7 @@ export default async function ProjectDetailPage({ params }: Props) {
           </header>
 
           {/* Content */}
-          {project.content.trim().length > 0 ? (
-            <div className="prose prose-neutral max-w-none overflow-hidden text-black/90 leading-[1.85] text-base md:text-lg [&_p]:mb-5 [&_p]:mt-0 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-black [&_h1]:mt-14 [&_h1]:mb-6 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-black [&_h2]:mt-14 [&_h2]:mb-6 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-black [&_h3]:mt-10 [&_h3]:mb-4 [&_blockquote]:border-l-2 [&_blockquote]:border-black/20 [&_blockquote]:pl-6 [&_blockquote]:my-8 [&_blockquote]:italic [&_blockquote]:text-muted [&_a]:text-black [&_a]:underline [&_a]:underline-offset-4 [&_strong]:text-black [&_ul]:my-5 [&_ul]:space-y-2 [&_li]:text-black/80 [&_pre]:bg-[#121212] [&_pre]:text-white/90 [&_pre]:p-4 [&_pre]:md:p-5 [&_pre]:my-8 [&_pre]:md:my-10 [&_pre]:rounded-xl [&_pre]:overflow-x-auto [&_pre]:text-xs [&_pre]:md:text-sm [&_pre]:shadow-lg [&_pre]:leading-relaxed [&_pre]:tracking-wide [&_pre]:max-w-full">
-              <MDXRemote
-                source={project.content}
-                components={mdxComponents}
-                options={{
-                  mdxOptions: {
-                    remarkPlugins: [remarkGfm, remarkMath],
-                    rehypePlugins: [
-                      rehypeSlug,
-                      rehypeKatex,
-                      [rehypePrettyCode, { theme: "vitesse-dark" }],
-                    ],
-                  },
-                }}
-              />
-            </div>
-          ) : (
-            <div className="border border-border/50 p-12 text-center">
-              <p className="font-mono text-sm text-muted tracking-wider">
-                NO CONTENT YET — DETAILS COMING SOON
-              </p>
-            </div>
-          )}
+          {await renderProjectContent(slug, project.content)}
 
           {/* End mark */}
           <div className="mt-20 pt-8 border-t border-border font-mono text-[10px] text-muted tracking-wider">
