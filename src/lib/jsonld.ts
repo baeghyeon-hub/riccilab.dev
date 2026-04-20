@@ -1,4 +1,10 @@
-import { BASE_URL, SITE_NAME, SITE_DESCRIPTION } from "./constants";
+import {
+  BASE_URL,
+  SITE_NAME,
+  SITE_DESCRIPTION,
+  GITHUB_URL,
+  TWITTER_URL,
+} from "./constants";
 
 export function organizationJsonLd() {
   return {
@@ -7,6 +13,9 @@ export function organizationJsonLd() {
     name: SITE_NAME,
     url: BASE_URL,
     description: SITE_DESCRIPTION,
+    // sameAs ties the site to its external social profiles — helps Google
+    // resolve the author entity and can surface in Knowledge Graph.
+    sameAs: [GITHUB_URL, TWITTER_URL],
   };
 }
 

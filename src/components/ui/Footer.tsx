@@ -2,11 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
+import { CONTACT_EMAIL, GITHUB_URL, TWITTER_URL } from "@/lib/constants";
 
 const SOCIALS = [
-  { label: "Github", href: "#" },
-  { label: "Twitter", href: "#" },
-  { label: "LinkedIn", href: "#" },
+  { label: "Github", href: GITHUB_URL },
+  { label: "Twitter", href: TWITTER_URL },
 ] as const;
 
 export function Footer() {
@@ -35,10 +35,10 @@ export function Footer() {
         </p>
         <a
           ref={emailRef}
-          href="mailto:hello@riccilab.dev"
-          className="text-3xl md:text-5xl lg:text-6xl font-semibold text-black hover:text-muted transition-colors leading-tight inline-block"
+          href={`mailto:${CONTACT_EMAIL}`}
+          className="text-3xl md:text-5xl lg:text-6xl font-semibold text-black hover:text-muted transition-colors leading-tight inline-block break-all"
         >
-          hello@riccilab.dev
+          {CONTACT_EMAIL}
         </a>
 
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mt-24 pt-6 border-t border-border">
@@ -50,6 +50,8 @@ export function Footer() {
               <a
                 key={s.label}
                 href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-xs text-muted hover:text-black transition-colors"
               >
                 {s.label}
