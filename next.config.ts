@@ -61,7 +61,13 @@ const nextConfig: NextConfig = {
 const withMDX = createMDX({
   extension: /\.mdx?$/,
   options: {
-    remarkPlugins: ["remark-gfm", "remark-math"],
+    // remark-frontmatter recognizes the leading YAML `---` block as a
+    // yaml AST node rather than body text. Without it, @next/mdx treats
+    // the first `---` as a thematic break and renders the frontmatter
+    // lines as a paragraph at the top of the post. gray-matter already
+    // extracts the same block server-side for metadata; this plugin just
+    // ensures the MDX compiler also knows to skip it during rendering.
+    remarkPlugins: [["remark-frontmatter", ["yaml"]], "remark-gfm", "remark-math"],
     rehypePlugins: [
       "rehype-slug",
       "rehype-katex",
