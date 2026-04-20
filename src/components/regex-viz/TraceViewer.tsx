@@ -24,6 +24,10 @@ export function TraceViewer({ trace, className }: TraceViewerProps) {
   const last = trace.steps.length - 1;
   const clamped = Math.min(i, last);
   const step = trace.steps[clamped];
+  // A one-step trace (e.g. a single literal) has nothing to scrub through.
+  // Hiding the control row avoids shipping an interactive-looking slider
+  // that silently refuses input — cleaner than a disabled-looking stub.
+  const scrubbable = trace.steps.length > 1;
 
   return (
     <div
@@ -53,39 +57,41 @@ export function TraceViewer({ trace, className }: TraceViewerProps) {
         <NfaGraph nfa={step.nfa} active={step.active} />
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <button
-          type="button"
-          onClick={() => setI(Math.max(0, clamped - 1))}
-          disabled={clamped === 0}
-          aria-label="previous step"
-          style={stepButtonStyle}
-        >
-          ◀
-        </button>
-        <input
-          type="range"
-          min={0}
-          max={last}
-          value={clamped}
-          onChange={(e) => setI(Number(e.target.value))}
-          style={{
-            flex: 1,
-            accentColor: "var(--code-inline-fg)",
-            cursor: "pointer",
-          }}
-          aria-label="step"
-        />
-        <button
-          type="button"
-          onClick={() => setI(Math.min(last, clamped + 1))}
-          disabled={clamped === last}
-          aria-label="next step"
-          style={stepButtonStyle}
-        >
-          ▶
-        </button>
-      </div>
+      {scrubbable && (
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button
+            type="button"
+            onClick={() => setI(Math.max(0, clamped - 1))}
+            disabled={clamped === 0}
+            aria-label="previous step"
+            style={stepButtonStyle}
+          >
+            ◀
+          </button>
+          <input
+            type="range"
+            min={0}
+            max={last}
+            value={clamped}
+            onChange={(e) => setI(Number(e.target.value))}
+            style={{
+              flex: 1,
+              accentColor: "var(--code-inline-fg)",
+              cursor: "pointer",
+            }}
+            aria-label="step"
+          />
+          <button
+            type="button"
+            onClick={() => setI(Math.min(last, clamped + 1))}
+            disabled={clamped === last}
+            aria-label="next step"
+            style={stepButtonStyle}
+          >
+            ▶
+          </button>
+        </div>
+      )}
 
       <div
         style={{
