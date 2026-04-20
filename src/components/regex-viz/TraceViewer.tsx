@@ -78,6 +78,32 @@ export function TraceViewer({ trace, className }: TraceViewerProps) {
       : `+${enteredNodes.length}s/+${newEdgeSet.size}t`;
   })();
 
+  // ─── Outcome detection (run traces only) ────────────────────────────
+  // Three failure/success modes the reader needs to distinguish:
+  //   - stuck: active set went empty mid-input (no transition on the
+  //     char just consumed). The char at the previous step's input_pos
+  //     is the one that killed the match.
+  //   - final match: reached last step and accept state is active.
+  //   - final mismatch: reached last step but accept is not active.
+  // Without these cues, empty-active frames look identical to "viewer
+  // broken" and the terminal step's verdict is buried in description text.
+  const isStuck =
+    trace.kind === "run" &&
+    step.active.length === 0 &&
+    prev != null &&
+    prev.active.length > 0;
+  const stuckPos = isStuck ? prev?.input_pos ?? null : null;
+  const isTerminal = clamped === last;
+  const descLower = step.description.toLowerCase();
+  const verdict: "match" | "mismatch" | null =
+    isTerminal && trace.kind === "run"
+      ? descLower.startsWith("match")
+        ? "match"
+        : descLower.startsWith("mismatch") || descLower.startsWith("no match")
+        ? "mismatch"
+        : null
+      : null;
+
   return (
     <div
       className={className}
@@ -99,8 +125,18 @@ export function TraceViewer({ trace, className }: TraceViewerProps) {
           justifyContent: "center",
           padding: 12,
           background: "var(--color-bg)",
-          border: "1px solid var(--color-border)",
+          // Border hue doubles as a status ring: stuck → dim red, final
+          // match → green, default → neutral border. Border alone (no
+          // fill change) keeps the graph itself readable.
+          border:
+            "1px solid " +
+            (isStuck || verdict === "mismatch"
+              ? "var(--code-stuck-border)"
+              : verdict === "match"
+              ? "var(--code-match-border)"
+              : "var(--color-border)"),
           borderRadius: 6,
+          transition: "border-color 0.15s",
         }}
       >
         <NfaGraph
@@ -197,13 +233,26 @@ export function TraceViewer({ trace, className }: TraceViewerProps) {
         >
           {step.description}
         </span>
-        <span>
-          {step.nfa.states.length}s · {step.nfa.transitions.length}t
+        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {verdict === "match" && (
+            <span style={verdictBadgeStyle("match")}>✓ MATCH</span>
+          )}
+          {verdict === "mismatch" && (
+            <span style={verdictBadgeStyle("mismatch")}>✗ NO MATCH</span>
+          )}
+          <span>
+            {step.nfa.states.length}s · {step.nfa.transitions.length}t
+          </span>
         </span>
       </div>
 
       {trace.kind === "run" && trace.input != null && (
-        <InputStrip input={trace.input} pos={step.input_pos} />
+        <InputStrip
+          input={trace.input}
+          pos={step.input_pos}
+          stuckPos={stuckPos}
+          faded={verdict === "mismatch"}
+        />
       )}
     </div>
   );
@@ -214,6 +263,23 @@ export function TraceViewer({ trace, className }: TraceViewerProps) {
 // together so we only compute the string once per edge per render.
 function edgeKey(from: number, to: number, label: string): string {
   return `${from}-${to}-${label}`;
+}
+
+// Verdict pill. Uses the stuck/match tokens defined in globals.css so
+// both modes get themed automatically. Kept as a function so the two
+// callsites stay declarative (MATCH vs NO MATCH share 95% of the style).
+function verdictBadgeStyle(kind: "match" | "mismatch"): React.CSSProperties {
+  const prefix = kind === "match" ? "--code-match" : "--code-stuck";
+  return {
+    color: `var(${prefix}-fg)`,
+    background: `var(${prefix}-bg)`,
+    border: `1px solid var(${prefix}-border)`,
+    borderRadius: 3,
+    padding: "1px 6px",
+    fontSize: 11,
+    letterSpacing: "0.08em",
+    fontWeight: 600,
+  };
 }
 
 // Mono ghost button: transparent fill, border in theme tokens. Disabled
@@ -232,7 +298,19 @@ const stepButtonStyle: React.CSSProperties = {
   lineHeight: 1,
 };
 
-function InputStrip({ input, pos }: { input: string; pos: number | null }) {
+function InputStrip({
+  input,
+  pos,
+  stuckPos,
+  faded,
+}: {
+  input: string;
+  pos: number | null;
+  /** Index of the character whose consumption killed the match. */
+  stuckPos?: number | null;
+  /** Dim the whole strip when the run ended in a final mismatch. */
+  faded?: boolean;
+}) {
   const chars = Array.from(input);
   return (
     <div
@@ -242,22 +320,42 @@ function InputStrip({ input, pos }: { input: string; pos: number | null }) {
         fontSize: 14,
         textAlign: "center",
         padding: "6px 0",
+        opacity: faded ? 0.55 : 1,
       }}
     >
       {chars.map((c, i) => {
         const isActive = i === pos;
+        const isStuck = i === stuckPos;
+        // Three states per char, priority stuck > active > default.
+        // Stuck char gets the dim-red token plus a line-through so the
+        // reader sees "this is the character that broke the match",
+        // even without the description text.
+        const color = isStuck
+          ? "var(--code-stuck-fg)"
+          : isActive
+          ? "var(--code-inline-fg)"
+          : "var(--color-black)";
+        const background = isStuck
+          ? "var(--code-stuck-bg)"
+          : isActive
+          ? "var(--code-inline-bg)"
+          : "transparent";
+        const borderColor = isStuck
+          ? "var(--code-stuck-fg)"
+          : isActive
+          ? "var(--code-inline-fg)"
+          : "transparent";
         return (
           <span
             key={i}
             style={{
               padding: "2px 5px",
               margin: "0 1px",
-              color: isActive ? "var(--code-inline-fg)" : "var(--color-black)",
-              background: isActive ? "var(--code-inline-bg)" : "transparent",
-              borderBottom: isActive
-                ? "2px solid var(--code-inline-fg)"
-                : "2px solid transparent",
+              color,
+              background,
+              borderBottom: `2px solid ${borderColor}`,
               borderRadius: 3,
+              textDecoration: isStuck ? "line-through" : undefined,
               transition: "background 0.1s, color 0.1s",
             }}
           >

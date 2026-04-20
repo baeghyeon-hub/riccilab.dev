@@ -26,6 +26,22 @@
   --code-inline-fg: #d4453e;
   --code-inline-bg: rgba(212, 69, 62, 0.08);
   --code-inline-border: rgba(212, 69, 62, 0.18);
+
+  /* regex-viz "stuck / failed match" tokens (light).
+     Distinct hue from the coral --code-inline-fg so the reader can tell
+     "attention" (coral) from "failure" (dim red) at a glance. Used by
+     TraceViewer to mark consumed-but-dead-end characters and by the
+     verdict badge to render NO MATCH. */
+  --code-stuck-fg: #9a5252;
+  --code-stuck-bg: rgba(154, 82, 82, 0.10);
+  --code-stuck-border: rgba(154, 82, 82, 0.25);
+
+  /* Successful-match accent (light) — reuse the site's green for a clear
+     "match completed" verdict badge. Background gets the same green at
+     low alpha so the pill matches other accent chips in prose. */
+  --code-match-fg: #00aa55;
+  --code-match-bg: rgba(0, 170, 85, 0.10);
+  --code-match-border: rgba(0, 170, 85, 0.28);
 }
 
 .dark {
@@ -40,6 +56,18 @@
   --code-inline-fg: #ff7a6b;
   --code-inline-bg: rgba(255, 122, 107, 0.12);
   --code-inline-border: rgba(255, 122, 107, 0.22);
+
+  /* regex-viz stuck/failed tokens (dark). Same role as the light-mode
+     version — dimmer red that reads as "failure" without competing with
+     the --code-inline-fg coral attention color. */
+  --code-stuck-fg: #c58a8a;
+  --code-stuck-bg: rgba(197, 138, 138, 0.14);
+  --code-stuck-border: rgba(197, 138, 138, 0.32);
+
+  /* Successful-match accent (dark) — the dark-mode site accent green. */
+  --code-match-fg: #33cc77;
+  --code-match-bg: rgba(51, 204, 119, 0.12);
+  --code-match-border: rgba(51, 204, 119, 0.30);
 }
 
 html.lenis, html.lenis body {
