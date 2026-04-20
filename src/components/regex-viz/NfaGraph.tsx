@@ -26,12 +26,40 @@ type LaidOutEdge = {
 export type NfaGraphProps = {
   nfa: Nfa;
   active?: number[];
+  /**
+   * Nodes newly "salient" this step:
+   *   - run trace: states that entered the active set since the previous
+   *     step (i.e. `active ∖ prev.active`).
+   *   - build trace: states that didn't exist in the previous snapshot
+   *     (i.e. `nfa.states ∖ prev.nfa.states`).
+   *
+   * Rendered with an additional coral inner ring so "what changed this
+   * frame" reads at a glance. Critical when ε-closure loopbacks produce
+   * consecutive identical active sets, or when the accumulated build
+   * snapshot is large and most of the picture is carry-over structure.
+   */
+  entered?: number[];
+  /**
+   * Transition keys (`${from}-${to}-${label}`) newly added this step.
+   * Build traces only — in run traces the NFA is immutable so this is
+   * always empty. Matching edges render with the coral accent instead of
+   * the default muted/literal palette.
+   */
+  newEdges?: Set<string>;
   className?: string;
 };
 
-export function NfaGraph({ nfa, active = [], className }: NfaGraphProps) {
+export function NfaGraph({
+  nfa,
+  active = [],
+  entered = [],
+  newEdges,
+  className,
+}: NfaGraphProps) {
   const layout = useMemo(() => computeLayout(nfa), [nfa]);
   const activeSet = new Set(active);
+  const enteredSet = new Set(entered);
+  const newEdgeSet = newEdges ?? new Set<string>();
 
   return (
     <svg
@@ -72,35 +100,54 @@ export function NfaGraph({ nfa, active = [], className }: NfaGraphProps) {
         >
           <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--color-muted)" />
         </marker>
+        <marker
+          id="regex-viz-arrow-new"
+          viewBox="0 0 10 10"
+          refX="9"
+          refY="5"
+          markerWidth="6"
+          markerHeight="6"
+          orient="auto"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--code-inline-fg)" />
+        </marker>
       </defs>
 
       {layout.edges.map((e, i) => {
         const isEps = e.label === EPSILON;
+        const isNew = newEdgeSet.has(`${e.from}-${e.to}-${e.label}`);
         const mid = midpoint(e.points);
+        const strokeColor = isNew
+          ? "var(--code-inline-fg)"
+          : isEps
+          ? "var(--color-muted)"
+          : "currentColor";
+        const markerId = isNew
+          ? "regex-viz-arrow-new"
+          : isEps
+          ? "regex-viz-arrow-eps"
+          : "regex-viz-arrow";
         return (
           <g key={i}>
             <path
               d={pointsToPath(e.points)}
               fill="none"
-              stroke={isEps ? "var(--color-muted)" : "currentColor"}
-              strokeOpacity={isEps ? 0.7 : 0.8}
-              strokeWidth={1.4}
+              stroke={strokeColor}
+              strokeOpacity={isNew ? 1 : isEps ? 0.7 : 0.8}
+              strokeWidth={isNew ? 1.8 : 1.4}
               strokeDasharray={isEps ? "4 3" : undefined}
-              markerEnd={
-                isEps
-                  ? "url(#regex-viz-arrow-eps)"
-                  : "url(#regex-viz-arrow)"
-              }
+              markerEnd={`url(#${markerId})`}
             />
             <text
               x={mid.x}
               y={mid.y - 5}
               textAnchor="middle"
               fontSize="12"
-              fill={isEps ? "var(--color-muted)" : "currentColor"}
+              fill={strokeColor}
               stroke="var(--color-bg)"
               strokeWidth="3"
               paintOrder="stroke"
+              fontWeight={isNew ? 600 : 400}
             >
               {e.label}
             </text>
@@ -112,17 +159,21 @@ export function NfaGraph({ nfa, active = [], className }: NfaGraphProps) {
         const isStart = n.id === nfa.start;
         const isAccept = n.id === nfa.accept;
         const isActive = activeSet.has(n.id);
-        // Active node: coral accent matching inline-code pills. Start node:
-        // subtle surface tint so the entry point is visible without
-        // competing with active/accept markings.
+        const isEntered = enteredSet.has(n.id);
+        // Coral accent tracks two distinct "things worth noticing":
+        //   - fill (tinted bg) means "currently active" (run traces)
+        //   - stroke (outer + optional inner ring) means "salient this
+        //     step" — either newly entered active (run) or newly added
+        //     structure (build). Both traces agree on "coral = attention
+        //     for this frame's delta", just indexed by different sets.
         const fill = isActive
           ? "var(--code-inline-bg)"
           : isStart
           ? "var(--color-surface)"
           : "var(--color-bg)";
-        const stroke = isActive
-          ? "var(--code-inline-fg)"
-          : "currentColor";
+        const stroke =
+          isActive || isEntered ? "var(--code-inline-fg)" : "currentColor";
+        const strokeW = isActive || isEntered ? 1.8 : 1.4;
         return (
           <g key={n.id}>
             {isAccept && (
@@ -142,8 +193,26 @@ export function NfaGraph({ nfa, active = [], className }: NfaGraphProps) {
               r={NODE_R}
               fill={fill}
               stroke={stroke}
-              strokeWidth={isActive ? 1.8 : 1.4}
+              strokeWidth={strokeW}
             />
+            {/* Inner ring marks "arrived this step". Carry-over active
+                nodes get the coral stroke but no inner ring, so the
+                reader can separate "still here from last frame" from
+                "newly computed this frame". Empty-delta frames show
+                zero inner rings — that alone tells the reader the
+                scrub did advance but the closure is idempotent under
+                this input (or this AST node added no new states). */}
+            {isEntered && (
+              <circle
+                cx={n.x}
+                cy={n.y}
+                r={NODE_R - 4}
+                fill="none"
+                stroke="var(--code-inline-fg)"
+                strokeWidth={1.2}
+                strokeOpacity={0.9}
+              />
+            )}
             <text
               x={n.x}
               y={n.y + 4}

@@ -24,10 +24,59 @@ export function TraceViewer({ trace, className }: TraceViewerProps) {
   const last = trace.steps.length - 1;
   const clamped = Math.min(i, last);
   const step = trace.steps[clamped];
+  const prev = clamped > 0 ? trace.steps[clamped - 1] : null;
   // A one-step trace (e.g. a single literal) has nothing to scrub through.
   // Hiding the control row avoids shipping an interactive-looking slider
   // that silently refuses input — cleaner than a disabled-looking stub.
   const scrubbable = trace.steps.length > 1;
+
+  // ─── Step-over-step diff ────────────────────────────────────────────
+  // Without an explicit diff, consecutive frames can look identical —
+  // ε-closure loopbacks in run traces produce the same active set for
+  // two chars in a row, and build traces re-render the full accumulated
+  // NFA every frame so 80% of the picture is carry-over. The reader has
+  // no way to tell "intended no-op" from "viewer didn't update".
+  //
+  // Two semantics unified under one `entered` set:
+  //   - run trace  → states that newly joined the active set
+  //   - build trace → states that didn't exist in the previous snapshot
+  // Plus `newEdges` (build only), where new transitions get the coral
+  // accent. Empty-delta frames show zero inner rings and a "Δ 0" badge,
+  // which is the correct signal that the scrub did advance.
+  const prevActiveSet = new Set(prev?.active ?? []);
+  const prevStateSet = new Set(prev?.nfa.states ?? []);
+  const prevEdgeKeys = new Set(
+    prev?.nfa.transitions.map((t) => edgeKey(t.from, t.to, t.label)) ?? []
+  );
+  const currActiveSet = new Set(step.active);
+
+  const enteredNodes =
+    trace.kind === "run"
+      ? step.active.filter((s) => !prevActiveSet.has(s))
+      : step.nfa.states.filter((s) => !prevStateSet.has(s));
+  const exitedCount =
+    trace.kind === "run"
+      ? [...prevActiveSet].filter((s) => !currActiveSet.has(s)).length
+      : 0;
+  const newEdgeSet = new Set(
+    step.nfa.transitions
+      .map((t) => edgeKey(t.from, t.to, t.label))
+      .filter((k) => !prevEdgeKeys.has(k))
+  );
+
+  // Δ label: for run, nodes-only since edges never change. For build,
+  // show both state and transition deltas since either can be zero.
+  const deltaLabel = (() => {
+    if (!prev) return null;
+    if (trace.kind === "run") {
+      return enteredNodes.length + exitedCount === 0
+        ? "Δ 0"
+        : `Δ +${enteredNodes.length}/−${exitedCount}`;
+    }
+    return enteredNodes.length + newEdgeSet.size === 0
+      ? "Δ 0"
+      : `+${enteredNodes.length}s/+${newEdgeSet.size}t`;
+  })();
 
   return (
     <div
@@ -54,7 +103,12 @@ export function TraceViewer({ trace, className }: TraceViewerProps) {
           borderRadius: 6,
         }}
       >
-        <NfaGraph nfa={step.nfa} active={step.active} />
+        <NfaGraph
+          nfa={step.nfa}
+          active={step.active}
+          entered={enteredNodes}
+          newEdges={newEdgeSet}
+        />
       </div>
 
       {scrubbable && (
@@ -105,8 +159,34 @@ export function TraceViewer({ trace, className }: TraceViewerProps) {
           letterSpacing: "0.02em",
         }}
       >
-        <span>
+        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
           step {clamped + 1} / {trace.steps.length}
+          {deltaLabel && (
+            <span
+              style={{
+                // Coral tint when there IS a delta, muted when Δ 0 —
+                // "something happened" vs "math says nothing changed".
+                color:
+                  deltaLabel === "Δ 0"
+                    ? "var(--color-muted)"
+                    : "var(--code-inline-fg)",
+                background:
+                  deltaLabel === "Δ 0"
+                    ? "transparent"
+                    : "var(--code-inline-bg)",
+                border:
+                  "1px solid " +
+                  (deltaLabel === "Δ 0"
+                    ? "var(--color-border)"
+                    : "var(--code-inline-border, transparent)"),
+                borderRadius: 3,
+                padding: "1px 5px",
+                fontSize: 11,
+              }}
+            >
+              {deltaLabel}
+            </span>
+          )}
         </span>
         <span
           style={{
@@ -127,6 +207,13 @@ export function TraceViewer({ trace, className }: TraceViewerProps) {
       )}
     </div>
   );
+}
+
+// Stable key for a transition — same format used by both the step-over-
+// step diff here and the `newEdges` lookup inside NfaGraph. Ties them
+// together so we only compute the string once per edge per render.
+function edgeKey(from: number, to: number, label: string): string {
+  return `${from}-${to}-${label}`;
 }
 
 // Mono ghost button: transparent fill, border in theme tokens. Disabled
