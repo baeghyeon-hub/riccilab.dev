@@ -21,4 +21,6 @@ export const fsProjectComponents: Record<
 > = {
   "thompsons-construction-visible": () =>
     import("@/content/projects/thompsons-construction-visible.mdx"),
+  "nfa-watching-it-match": () =>
+    import("@/content/projects/nfa-watching-it-match.mdx"),
 };
