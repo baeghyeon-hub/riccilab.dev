@@ -94,10 +94,44 @@ const mdxComponents = {
       )}
     </figure>
   ),
+  // Explicit th/td overrides so prose-neutral's default table styling
+  // (which leaves headers and body cells to negotiate alignment via `align`
+  // attributes that GFM rarely emits) doesn't leak through. Left-aligned
+  // everywhere, top-padded divider under the header row, and a subtle row
+  // stripe on tbody so the visual scan matches a CLI table.
   table: (props: any) => (
     <div className="table-wrap my-8 overflow-x-auto -mx-5 px-5">
-      <table className="min-w-[600px] w-full border-collapse text-sm" {...props} />
+      <table
+        className="min-w-[600px] w-full border-collapse text-sm"
+        {...props}
+      />
     </div>
+  ),
+  thead: (props: any) => (
+    <thead className="border-b border-black/20" {...props} />
+  ),
+  th: (props: any) => {
+    const { align, ...rest } = props;
+    return (
+      <th
+        className="py-2 pr-6 text-left align-top font-semibold text-black whitespace-nowrap"
+        style={align ? { textAlign: align } : undefined}
+        {...rest}
+      />
+    );
+  },
+  td: (props: any) => {
+    const { align, ...rest } = props;
+    return (
+      <td
+        className="py-2 pr-6 text-left align-top text-black/85"
+        style={align ? { textAlign: align } : undefined}
+        {...rest}
+      />
+    );
+  },
+  tr: (props: any) => (
+    <tr className="border-b border-black/5 last:border-0" {...props} />
   ),
 };
 
