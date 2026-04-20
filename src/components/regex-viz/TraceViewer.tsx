@@ -183,19 +183,25 @@ export function TraceViewer({ trace, className }: TraceViewerProps) {
         </div>
       )}
 
+      {/*
+        Responsive status bar. On ≥sm the three sections lay out in a
+        single row (step+Δ | description | verdict+counts). Below sm the
+        description takes its own full-width line on top (otherwise the
+        middle flex-1 column collapses and the text wraps character by
+        character on narrow screens), while the meta rows hang below with
+        step+Δ pinned left and verdict+counts pinned right.
+      */}
       <div
+        className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
         style={{
           fontFamily:
             "var(--font-sans), ui-monospace, SFMono-Regular, Menlo, monospace",
           fontSize: 12,
           color: "var(--color-muted)",
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 12,
           letterSpacing: "0.02em",
         }}
       >
-        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span className="order-2 sm:order-none flex items-center gap-2">
           step {clamped + 1} / {trace.steps.length}
           {deltaLabel && (
             <span
@@ -225,15 +231,12 @@ export function TraceViewer({ trace, className }: TraceViewerProps) {
           )}
         </span>
         <span
-          style={{
-            flex: 1,
-            textAlign: "center",
-            color: "var(--color-black)",
-          }}
+          className="order-1 sm:order-none sm:flex-1 text-center break-words"
+          style={{ color: "var(--color-black)" }}
         >
           {step.description}
         </span>
-        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span className="order-3 sm:order-none flex items-center justify-end gap-2">
           {verdict === "match" && (
             <span style={verdictBadgeStyle("match")}>✓ MATCH</span>
           )}
