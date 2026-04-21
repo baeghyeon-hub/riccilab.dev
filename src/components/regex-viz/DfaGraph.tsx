@@ -216,15 +216,24 @@ export function DfaGraph({
         const blockColor = blockFill?.[s.id];
 
         // Fill precedence:
+        //   blockFill → palette color (Stage 5 partition coloring). Wins
+        //               over the sink override so the totalized-source
+        //               pane paints the synthetic sink with its current
+        //               block color — otherwise the legend pill `{∅}`
+        //               would have a color while the node it refers to
+        //               stayed grey, breaking the pill↔node mapping that
+        //               every other block has. The dashed stroke below
+        //               still carries the "this is synthetic" signal.
+        //               The minimized pane doesn't pass blockFill, so
+        //               its sink still falls through to muted surface.
         //   sink      → surface (muted, distinct from bg via dashed stroke)
-        //   blockFill → palette color (Stage 5 partition coloring)
         //   focus     → coral bg (Stage 3/4 "this step's attention")
         //   accept    → surface
         //   default   → bg
-        const fill = isSink
-          ? "var(--color-surface)"
-          : blockColor
+        const fill = blockColor
           ? blockColor
+          : isSink
+          ? "var(--color-surface)"
           : isFocus
           ? "var(--code-inline-bg)"
           : s.is_accept
