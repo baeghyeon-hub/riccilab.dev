@@ -82,7 +82,7 @@ export function ComparisonViewer({ trace, className }: ComparisonViewerProps) {
           "1px solid " +
           (isTerminal && verdict === "match-agree"
             ? "var(--code-match-border)"
-            : isTerminal && verdict === "disagree"
+            : isTerminal && verdict !== "match-agree"
             ? "var(--code-stuck-border)"
             : "var(--color-border)"),
         borderRadius: 8,
@@ -210,47 +210,31 @@ export function ComparisonViewer({ trace, className }: ComparisonViewerProps) {
 }
 
 // Verdict pill. Three cases here vs TraceViewer's two:
-//   match   — final accept on both engines (green, attention-grabbing)
-//   reject  — final reject on both (muted grey — no-match is common,
-//             shouldn't shout)
+//   match    — final accept on both engines (green match tokens)
+//   reject   — final reject on both (dim-red stuck tokens, matching
+//              TraceViewer's "✗ NO MATCH" — same semantic "match failed,
+//              this is the correct outcome for this input" as Stage 2,
+//              so same color. Earlier attempt at muted-grey was too
+//              subtle against the dark surface and broke consistency
+//              with the other viewers.)
 //   disagree — summary.verdicts_agree === false. Construction is
-//             equivalence-preserving by proof, so this only fires if the
-//             Rust side has a bug. We render it loud so it's impossible
-//             to miss if it ever surfaces in prod.
+//              equivalence-preserving by proof, so this only fires if
+//              the Rust side has a bug. Renders in stuck tokens too,
+//              distinguished by the "⚠ DISAGREE" text so if it ever
+//              surfaces in prod the label carries the warning.
 function verdictBadgeStyle(
   kind: "match" | "reject" | "disagree",
 ): React.CSSProperties {
-  const base: React.CSSProperties = {
+  const prefix = kind === "match" ? "--code-match" : "--code-stuck";
+  return {
+    color: `var(${prefix}-fg)`,
+    background: `var(${prefix}-bg)`,
+    border: `1px solid var(${prefix}-border)`,
     borderRadius: 3,
     padding: "1px 6px",
     fontSize: 11,
     letterSpacing: "0.08em",
     fontWeight: 600,
-    border: "1px solid",
-  };
-  if (kind === "match") {
-    return {
-      ...base,
-      color: "var(--code-match-fg)",
-      background: "var(--code-match-bg)",
-      borderColor: "var(--code-match-border)",
-    };
-  }
-  if (kind === "disagree") {
-    return {
-      ...base,
-      color: "var(--code-stuck-fg)",
-      background: "var(--code-stuck-bg)",
-      borderColor: "var(--code-stuck-border)",
-    };
-  }
-  // reject-agree: no-match happened, but both engines agreed, so this is
-  // the correct outcome — tone it down to neutral grey.
-  return {
-    ...base,
-    color: "var(--color-muted)",
-    background: "transparent",
-    borderColor: "var(--color-border)",
   };
 }
 
