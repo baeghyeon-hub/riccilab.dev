@@ -83,19 +83,21 @@
   --code-match-bg: rgba(51, 204, 119, 0.12);
   --code-match-border: rgba(51, 204, 119, 0.30);
 
-  /* Hopcroft partition-block palette (dark). The light-mode pastels
-     become invisible on dark surfaces (light fill eats dark text), so
-     dark mode uses the same hue families expressed as saturated color
-     at low alpha — each block reads as a subtly tinted dark panel,
-     distinct enough to tell apart when adjacent but never shouting. */
-  --block-0: rgba(255, 140,  80, 0.22); /* peach       */
-  --block-1: rgba(100, 200, 160, 0.22); /* mint        */
-  --block-2: rgba(100, 160, 220, 0.22); /* powder      */
-  --block-3: rgba(170, 130, 230, 0.22); /* lilac       */
-  --block-4: rgba(230, 140, 170, 0.22); /* rose        */
-  --block-5: rgba(230, 200, 100, 0.22); /* cream       */
-  --block-6: rgba(140, 150, 240, 0.22); /* periwinkle  */
-  --block-7: rgba(200, 160, 110, 0.22); /* tan         */
+  /* Hopcroft partition-block palette (dark). Light-mode pastels go
+     invisible on dark surfaces, so dark mode uses the same hue
+     families as saturated color at raised alpha. Calibrated so each
+     block reads as a clearly-tinted dark panel — the color is what
+     carries block identity in the quotient pane, where there's no
+     coral outline or accept ring to lean on. White text still has
+     enough contrast at this alpha. */
+  --block-0: rgba(255, 140,  80, 0.50); /* peach       */
+  --block-1: rgba(100, 200, 160, 0.50); /* mint        */
+  --block-2: rgba(100, 160, 220, 0.50); /* powder      */
+  --block-3: rgba(170, 130, 230, 0.50); /* lilac       */
+  --block-4: rgba(230, 140, 170, 0.50); /* rose        */
+  --block-5: rgba(230, 200, 100, 0.50); /* cream       */
+  --block-6: rgba(140, 150, 240, 0.50); /* periwinkle  */
+  --block-7: rgba(200, 160, 110, 0.50); /* tan         */
 }
 
 html.lenis, html.lenis body {
