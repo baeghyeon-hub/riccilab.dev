@@ -64,6 +64,16 @@ export function ConstructionViewer({ trace, className }: ConstructionViewerProps
       : `+${newStates.size}D/+${newEdges.size}δ`;
   })();
 
+  // ─── Outcome (terminal step) ─────────────────────────────────────────
+  // Subset construction always succeeds — there's no failure mode like
+  // Stage 2's "stuck mid-input". The last step is always "done: N DFA
+  // state(s), accept = {...}". We still need the reader to see "this is
+  // the endpoint" visually, so we reuse the same match-token green the
+  // TraceViewer uses for a final match. Keeps the viewer family speaking
+  // one visual language: green border + DONE badge = "this is the
+  // terminal success frame".
+  const isTerminal = clamped === last;
+
   return (
     <div
       className={className}
@@ -73,10 +83,15 @@ export function ConstructionViewer({ trace, className }: ConstructionViewerProps
         gap: 12,
         alignItems: "stretch",
         padding: 16,
-        border: "1px solid var(--color-border)",
+        border:
+          "1px solid " +
+          (isTerminal
+            ? "var(--code-match-border)"
+            : "var(--color-border)"),
         borderRadius: 8,
         background: "var(--color-surface)",
         color: "var(--color-black)",
+        transition: "border-color 0.15s",
       }}
     >
       <Header regex={trace.regex} alphabet={trace.alphabet} />
@@ -191,6 +206,9 @@ export function ConstructionViewer({ trace, className }: ConstructionViewerProps
           {step.description}
         </span>
         <span className="order-3 sm:order-none flex items-center justify-end gap-2">
+          {isTerminal && (
+            <span style={verdictBadgeStyle("match")}>✓ DONE</span>
+          )}
           <span>
             {step.dfa_states.length}D · {step.dfa_transitions.length}δ
           </span>
@@ -202,6 +220,25 @@ export function ConstructionViewer({ trace, className }: ConstructionViewerProps
 
 function edgeKey(from: number, to: number, label: string): string {
   return `${from}-${to}-${label}`;
+}
+
+// Verdict pill. Subset construction only has a success terminal (no
+// failure mode), so in practice this is always called with "match". Kept
+// parameterized to match TraceViewer's helper so the two viewers stay
+// visually aligned — if a future stage grows a failure mode we can add
+// the "mismatch" branch here without touching callers.
+function verdictBadgeStyle(kind: "match" | "mismatch"): React.CSSProperties {
+  const prefix = kind === "match" ? "--code-match" : "--code-stuck";
+  return {
+    color: `var(${prefix}-fg)`,
+    background: `var(${prefix}-bg)`,
+    border: `1px solid var(${prefix}-border)`,
+    borderRadius: 3,
+    padding: "1px 6px",
+    fontSize: 11,
+    letterSpacing: "0.08em",
+    fontWeight: 600,
+  };
 }
 
 function Header({ regex, alphabet }: { regex: string; alphabet: string[] }) {
