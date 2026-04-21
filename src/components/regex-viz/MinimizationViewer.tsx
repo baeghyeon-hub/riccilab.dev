@@ -4,8 +4,12 @@
 // Left pane: the source DFA (from Stage 3) plus a dashed synthetic sink,
 // with every state colored by the partition block it currently belongs
 // to. The splitter block's members get a thick coral outline. Right
-// pane: the final minimized DFA (static across all steps — it is the
-// "destination" that the left pane's blocks collapse into).
+// pane: the *quotient DFA* induced by the current partition — each
+// block becomes a state, transitions follow the totalized source and
+// are projected onto the blocks. At step 0 this is just {accept} |
+// {non-accept}; at the fixed point it equals the final minimized DFA.
+// Right-pane colors mirror the left pane so each quotient state's fill
+// points directly at its members in the totalized DFA.
 //
 // The shared slider walks through each (splitter, symbol) pair that
 // caused a block to split. Steps that didn't cause a split are not
@@ -85,6 +89,25 @@ export function MinimizationViewer({
     return fill;
   }, [step.partition]);
 
+  // Progressive quotient DFA for the right pane. Recomputed from
+  // (partition, totalized) every step; cheap because partition is
+  // O(|states|) and the alphabet is small.
+  const quotient = useMemo(
+    () => projectQuotient(trace, step.partition, totalized),
+    [trace, step.partition, totalized],
+  );
+
+  // Right-pane fills — one entry per quotient state. State id is the
+  // block's smallest member, so reusing colorForSmallest(id) yields the
+  // same palette slot as the matching left-pane block. Readers can draw
+  // a straight line "this colored quotient node ↔ that colored
+  // left-pane cluster" without squinting at captions.
+  const quotientFill = useMemo(() => {
+    const fill: Record<number, string> = {};
+    for (const s of quotient.states) fill[s.id] = colorForSmallest(s.id);
+    return fill;
+  }, [quotient.states]);
+
   const splitterOutline = step.splitter_block ?? [];
   const isTerminal = clamped === last;
 
@@ -138,19 +161,27 @@ export function MinimizationViewer({
             subsetLabel={() => ""}
           />
         </Pane>
-        <Pane label="minimized DFA (destination)">
+        <Pane label="minimized DFA (so far)">
           <DfaGraph
-            states={minimizedAsSourceShape(trace)}
-            transitions={trace.minimized.transitions}
-            subsetLabel={(s) =>
-              // Show which source ids collapsed into this minimized
-              // state. Skip sink: the dashed style + ∅ label carry
-              // "this is the dead state" already.
-              trace.minimized.states[s.id].is_sink
-                ? ""
-                : `{${trace.minimized.states[s.id].block.join(",")}}`
-            }
-            sinkId={trace.minimized.sink_block}
+            states={quotient.states}
+            transitions={quotient.transitions}
+            blockFill={quotientFill}
+            subsetLabel={(s) => {
+              // `subset` carries the block's member ids (stashed by
+              // projectQuotient). Sink singleton needs no caption — the
+              // dashed `∅` node already tells that story. Mixed blocks
+              // containing the sink render it inline as `∅` inside the
+              // set so readers can spot "oh, the sink is still bundled
+              // with these two".
+              const block = s.subset;
+              const isSinkOnly =
+                block.length === 1 && block[0] === trace.sink_id;
+              if (isSinkOnly) return "";
+              return `{${block
+                .map((id) => (id === trace.sink_id ? "∅" : `D${id}`))
+                .join(",")}}`;
+            }}
+            sinkId={quotient.sinkSingletonId}
           />
         </Pane>
       </div>
@@ -470,15 +501,85 @@ function totalize(trace: MinimizationTrace): {
   return { states, transitions };
 }
 
-// The right pane's DfaGraph expects DfaState[] with subset/is_accept.
-// The minimized side stores `block` instead of `subset`. Adapt: use
-// `block` as the subset caption via `subsetLabel`.
-function minimizedAsSourceShape(trace: MinimizationTrace): DfaState[] {
-  return trace.minimized.states.map((s) => ({
-    id: s.id,
-    subset: s.block,
-    is_accept: s.is_accept,
-  }));
+// Project the current partition into a DFA: each block is a state,
+// each (block, symbol) pair becomes an edge to whatever block the
+// chosen representative lands in after one step on the totalized DFA.
+// The state's id is the block's smallest member, which keeps the
+// palette slot stable across refinement (splitting `{2,3,4}` into
+// `{2,3}` and `{4}` leaves the left half's id at 2 and its color
+// unchanged — only the new half picks up a fresh slot).
+//
+// `sinkSingletonId` is non-null only when the sink has been fully
+// isolated into its own block — that's the moment it's safe to render
+// the quotient state as the dashed `∅` dead state. While the sink is
+// still bundled with other non-accepts (early steps), the containing
+// block is a proper participant in the quotient and renders normally,
+// with `∅` shown inline inside its subset caption.
+function projectQuotient(
+  trace: MinimizationTrace,
+  partition: number[][],
+  totalized: { states: DfaState[]; transitions: DfaTransition[] },
+): {
+  states: DfaState[];
+  transitions: DfaTransition[];
+  sinkSingletonId: number | null;
+} {
+  // id → representative (smallest) of the block it lives in. Sized to
+  // cover every totalized id (0..=sink_id).
+  const repOf: number[] = new Array(trace.sink_id + 1);
+  for (const block of partition) {
+    for (const id of block) repOf[id] = block[0];
+  }
+
+  const states: DfaState[] = partition.map((block) => {
+    // Hopcroft's initial split is {accept} | {non-accept}, and no later
+    // refinement can merge across that boundary — so every member of a
+    // block shares accept status. Ask any member that isn't the sink
+    // (which is non-accepting by construction).
+    const representative = block.find((id) => id !== trace.sink_id);
+    const isAccept =
+      representative != null
+        ? trace.source_dfa_states[representative]?.is_accept ?? false
+        : false;
+    return {
+      id: block[0],
+      // Stash the block for subsetLabel to render; DfaGraph only reads
+      // `subset` via the caption path.
+      subset: block,
+      is_accept: isAccept,
+    };
+  });
+
+  // Index totalized transitions by (from, label) so the inner loop
+  // below is O(|blocks| × |Σ|) instead of O(|blocks| × |Σ| × |trans|).
+  const trans = new Map<string, number>();
+  for (const t of totalized.transitions) {
+    const k = `${t.from}|${t.label}`;
+    if (!trans.has(k)) trans.set(k, t.to);
+  }
+
+  const transitions: DfaTransition[] = [];
+  const seen = new Set<string>();
+  for (const block of partition) {
+    const from = block[0];
+    for (const c of trace.alphabet) {
+      const target = trans.get(`${from}|${c}`);
+      if (target == null) continue;
+      const to = repOf[target];
+      if (to == null) continue;
+      const k = `${from}|${to}|${c}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      transitions.push({ from, to, label: c });
+    }
+  }
+
+  // Dashed `∅` treatment only when the sink stands alone.
+  const sinkBlock = partition.find((b) => b.includes(trace.sink_id));
+  const sinkSingletonId =
+    sinkBlock && sinkBlock.length === 1 ? sinkBlock[0] : null;
+
+  return { states, transitions, sinkSingletonId };
 }
 
 function visibleCount(trace: MinimizationTrace): number {
