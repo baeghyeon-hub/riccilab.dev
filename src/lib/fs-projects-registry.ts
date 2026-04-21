@@ -23,4 +23,6 @@ export const fsProjectComponents: Record<
     import("@/content/projects/thompsons-construction-visible.mdx"),
   "nfa-watching-it-match": () =>
     import("@/content/projects/nfa-watching-it-match.mdx"),
+  "from-nfa-to-dfa-one-subset-at-a-time": () =>
+    import("@/content/projects/from-nfa-to-dfa-one-subset-at-a-time.mdx"),
 };
