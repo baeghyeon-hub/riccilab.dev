@@ -27,4 +27,6 @@ export const fsProjectComponents: Record<
     import("@/content/projects/from-nfa-to-dfa-one-subset-at-a-time.mdx"),
   "side-by-side-nfa-vs-dfa": () =>
     import("@/content/projects/side-by-side-nfa-vs-dfa.mdx"),
+  "hopcroft-dfa-minimization": () =>
+    import("@/content/projects/hopcroft-dfa-minimization.mdx"),
 };

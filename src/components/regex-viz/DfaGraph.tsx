@@ -47,6 +47,27 @@ export type DfaGraphProps = {
   newEdges?: Set<string>;
   /** Show the NFA subset beneath each D-node label (default: true). */
   showSubset?: boolean;
+  /** Stage 5: per-node fill override. Takes precedence over focus /
+   *  accept / default fill. MinimizationViewer uses this to color nodes
+   *  by the partition block they currently belong to. */
+  blockFill?: Record<number, string>;
+  /** Stage 5: D-state ids that should get a thick coral outline without
+   *  changing fill. Used to mark the splitter block's members.
+   *  Stackable with `blockFill` — a splitter-block node shows its block
+   *  color AND a thick outline. */
+  outlineIds?: number[];
+  /** Stage 5: if set, the node with this id is rendered as the implicit
+   *  sink — dashed outline, muted fill, `∅` label, no caption.
+   *  MinimizationViewer uses this on both panes: on the left pane, the
+   *  totalized sink is shown so the blocks look complete; on the right
+   *  pane, the sink block (if present) is marked so the reader knows
+   *  that node is "the dead state" of the minimized DFA. */
+  sinkId?: number | null;
+  /** Stage 5: custom caption renderer beneath each D-node label. Falls
+   *  back to `{subset.join(",")}` when absent. Return empty string to
+   *  hide the caption (Stage 5 left pane suppresses captions since the
+   *  block color already carries the "which group" signal). */
+  subsetLabel?: (state: DfaState) => string;
   className?: string;
 };
 
@@ -57,6 +78,10 @@ export function DfaGraph({
   newStates,
   newEdges,
   showSubset = true,
+  blockFill,
+  outlineIds,
+  sinkId = null,
+  subsetLabel,
   className,
 }: DfaGraphProps) {
   const layout = useMemo(
@@ -65,6 +90,7 @@ export function DfaGraph({
   );
   const newStateSet = newStates ?? new Set<number>();
   const newEdgeSet = newEdges ?? new Set<string>();
+  const outlineSet = outlineIds ? new Set(outlineIds) : null;
 
   // Empty-state placeholder. dagre on a 0-node graph returns 0×0, which
   // collapses to an invisible SVG — readers would see the right pane
@@ -138,9 +164,18 @@ export function DfaGraph({
 
       {layout.edges.map((e, i) => {
         const isNew = newEdgeSet.has(`${e.from}-${e.to}-${e.label}`);
+        // Edges touching the sink (Stage 5 totalization) are the
+        // synthetic "missing transition → sink" fills — rendering them
+        // solid would swamp the real transitions visually. Dash + lower
+        // opacity pushes them to the background so the reader's eye
+        // stays on the real structure.
+        const touchesSink =
+          sinkId != null && (e.from === sinkId || e.to === sinkId);
         const mid = midpoint(e.points);
         const strokeColor = isNew
           ? "var(--code-inline-fg)"
+          : touchesSink
+          ? "var(--color-muted)"
           : "currentColor";
         return (
           <g key={i}>
@@ -148,8 +183,9 @@ export function DfaGraph({
               d={pointsToPath(e.points)}
               fill="none"
               stroke={strokeColor}
-              strokeOpacity={isNew ? 1 : 0.8}
+              strokeOpacity={isNew ? 1 : touchesSink ? 0.45 : 0.8}
               strokeWidth={isNew ? 1.8 : 1.4}
+              strokeDasharray={touchesSink ? "3 3" : undefined}
               markerEnd={`url(#${isNew ? "regex-viz-dfa-arrow-new" : "regex-viz-dfa-arrow"})`}
             />
             <text
@@ -162,6 +198,7 @@ export function DfaGraph({
               strokeWidth="3"
               paintOrder="stroke"
               fontWeight={isNew ? 600 : 500}
+              opacity={touchesSink ? 0.55 : 1}
             >
               {e.label}
             </text>
@@ -174,22 +211,52 @@ export function DfaGraph({
         if (!n) return null;
         const isFocus = s.id === focus;
         const isNew = newStateSet.has(s.id);
-        // Same coral-vs-neutral language as NfaGraph: focus fill tints the
-        // node so "this is the D-state under the microscope right now"
-        // reads even without the description. New-this-step gets an inner
-        // ring so the reader separates "just born" from "existed before
-        // this step got to it".
-        const fill = isFocus
+        const isSink = sinkId != null && s.id === sinkId;
+        const isOutlined = outlineSet != null && outlineSet.has(s.id);
+        const blockColor = blockFill?.[s.id];
+
+        // Fill precedence:
+        //   sink      → surface (muted, distinct from bg via dashed stroke)
+        //   blockFill → palette color (Stage 5 partition coloring)
+        //   focus     → coral bg (Stage 3/4 "this step's attention")
+        //   accept    → surface
+        //   default   → bg
+        const fill = isSink
+          ? "var(--color-surface)"
+          : blockColor
+          ? blockColor
+          : isFocus
           ? "var(--code-inline-bg)"
           : s.is_accept
           ? "var(--color-surface)"
           : "var(--color-bg)";
-        const stroke =
-          isFocus || isNew ? "var(--code-inline-fg)" : "currentColor";
-        const strokeW = isFocus || isNew ? 1.8 : 1.4;
+
+        // Stroke precedence:
+        //   sink         → muted grey + dashed
+        //   outlined     → coral, thick (Stage 5 splitter block)
+        //   focus or new → coral, medium (Stage 3/4 attention)
+        //   default      → currentColor
+        const stroke = isSink
+          ? "var(--color-muted)"
+          : isOutlined || isFocus || isNew
+          ? "var(--code-inline-fg)"
+          : "currentColor";
+        const strokeW = isOutlined ? 2.5 : isFocus || isNew ? 1.8 : 1.4;
+
+        // Caption: subsetLabel overrides default `{subset}`. Sink always
+        // hides its caption (the synthetic sink has no underlying NFA
+        // subset, and any real dead states absorbed into it are not
+        // pedagogically interesting at this granularity).
+        const caption = isSink
+          ? ""
+          : subsetLabel
+          ? subsetLabel(s)
+          : `{${s.subset.join(",")}}`;
+        const showCaption = showSubset && caption.length > 0;
+
         return (
           <g key={s.id}>
-            {s.is_accept && (
+            {s.is_accept && !isSink && (
               <circle
                 cx={n.x}
                 cy={n.y}
@@ -207,8 +274,9 @@ export function DfaGraph({
               fill={fill}
               stroke={stroke}
               strokeWidth={strokeW}
+              strokeDasharray={isSink ? "4 3" : undefined}
             />
-            {isNew && (
+            {isNew && !isSink && (
               <circle
                 cx={n.x}
                 cy={n.y}
@@ -225,11 +293,11 @@ export function DfaGraph({
               textAnchor="middle"
               fontSize="13"
               fontWeight={600}
-              fill="currentColor"
+              fill={isSink ? "var(--color-muted)" : "currentColor"}
             >
-              D{s.id}
+              {isSink ? "∅" : `D${s.id}`}
             </text>
-            {showSubset && (
+            {showCaption && (
               <text
                 x={n.x}
                 y={n.y + NODE_R + 14}
@@ -237,7 +305,7 @@ export function DfaGraph({
                 fontSize="11"
                 fill="var(--color-muted)"
               >
-                {`{${s.subset.join(",")}}`}
+                {caption}
               </text>
             )}
           </g>

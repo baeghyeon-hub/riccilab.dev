@@ -42,6 +42,20 @@
   --code-match-fg: #00aa55;
   --code-match-bg: rgba(0, 170, 85, 0.10);
   --code-match-border: rgba(0, 170, 85, 0.28);
+
+  /* Hopcroft partition-block palette (light). 8 pastels — the
+     MinimizationViewer picks one per block keyed by smallest element,
+     so when a split carves parent → (child_in, child_out) the surviving
+     half keeps its color and only the new half picks up a fresh slot.
+     Readable with black text on white. */
+  --block-0: #fde4cf; /* peach       */
+  --block-1: #c9e4de; /* mint        */
+  --block-2: #c6def1; /* powder      */
+  --block-3: #dbcdf0; /* lilac       */
+  --block-4: #f7d6e0; /* rose        */
+  --block-5: #faedcb; /* cream       */
+  --block-6: #cddafd; /* periwinkle  */
+  --block-7: #ead7c3; /* tan         */
 }
 
 .dark {
@@ -68,6 +82,20 @@
   --code-match-fg: #33cc77;
   --code-match-bg: rgba(51, 204, 119, 0.12);
   --code-match-border: rgba(51, 204, 119, 0.30);
+
+  /* Hopcroft partition-block palette (dark). The light-mode pastels
+     become invisible on dark surfaces (light fill eats dark text), so
+     dark mode uses the same hue families expressed as saturated color
+     at low alpha — each block reads as a subtly tinted dark panel,
+     distinct enough to tell apart when adjacent but never shouting. */
+  --block-0: rgba(255, 140,  80, 0.22); /* peach       */
+  --block-1: rgba(100, 200, 160, 0.22); /* mint        */
+  --block-2: rgba(100, 160, 220, 0.22); /* powder      */
+  --block-3: rgba(170, 130, 230, 0.22); /* lilac       */
+  --block-4: rgba(230, 140, 170, 0.22); /* rose        */
+  --block-5: rgba(230, 200, 100, 0.22); /* cream       */
+  --block-6: rgba(140, 150, 240, 0.22); /* periwinkle  */
+  --block-7: rgba(200, 160, 110, 0.22); /* tan         */
 }
 
 html.lenis, html.lenis body {
