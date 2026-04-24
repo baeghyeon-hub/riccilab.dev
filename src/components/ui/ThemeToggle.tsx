@@ -1,27 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { triggerThemeGlitch } from "@/components/ui/ThemeGlitchFilter";
+import {
+  getNextThemeMode,
+  themeModeFromClassName,
+  useClientMounted,
+  useDocumentThemeMode,
+} from "@/lib/client-ui-state";
 
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    setIsDark(document.documentElement.classList.contains("dark"));
-  }, []);
+  const mounted = useClientMounted();
+  const themeMode = useDocumentThemeMode();
 
   const toggleTheme = () => {
     triggerThemeGlitch(() => {
-      if (document.documentElement.classList.contains("dark")) {
+      const currentMode = themeModeFromClassName(
+        document.documentElement.className
+      );
+      const nextMode = getNextThemeMode(currentMode);
+
+      if (nextMode === "light") {
         document.documentElement.classList.remove("dark");
         localStorage.setItem("theme", "light");
-        setIsDark(false);
       } else {
         document.documentElement.classList.add("dark");
         localStorage.setItem("theme", "dark");
-        setIsDark(true);
       }
     });
   };
@@ -35,7 +38,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       className="font-mono text-[11px] tracking-wider text-muted hover:text-black transition-colors px-2 py-1 select-none"
     >
-      [MODE: {isDark ? "DARK" : "LIGHT"}]
+      [MODE: {themeMode === "dark" ? "DARK" : "LIGHT"}]
     </button>
   );
 }

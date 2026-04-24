@@ -1,28 +1,18 @@
 "use client";
 
 import Giscus from "@giscus/react";
-import { useEffect, useState } from "react";
+import {
+  getGiscusThemeUrl,
+  useClientMounted,
+  useDocumentThemeMode,
+} from "@/lib/client-ui-state";
 
 export function GiscusComments() {
-  const [theme, setTheme] = useState("");
-
-  useEffect(() => {
-    const origin = window.location.origin;
-    const isDark = document.documentElement.classList.contains("dark");
-    setTheme(isDark ? `${origin}/giscus-theme.css` : `${origin}/giscus-theme-light.css`);
-
-    const observer = new MutationObserver(() => {
-      const dark = document.documentElement.classList.contains("dark");
-      setTheme(dark ? `${origin}/giscus-theme.css` : `${origin}/giscus-theme-light.css`);
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const mounted = useClientMounted();
+  const themeMode = useDocumentThemeMode();
+  const theme = mounted
+    ? getGiscusThemeUrl(window.location.origin, themeMode)
+    : "";
 
   return (
     <section className="max-w-3xl mx-auto mt-16">
