@@ -1,10 +1,9 @@
-import fs from "fs";
 import path from "path";
-import matter from "gray-matter";
 import { Client } from "@notionhq/client";
 import { unstable_cache } from "next/cache";
 import { getNotionPostContent } from "./notion";
 import { getAllCategories } from "./categories";
+import { readFsContentFiles } from "./fs-content";
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const PROJECTS_DATA_SOURCE_ID = process.env.NOTION_PROJECTS_DATABASE_ID ?? "";
@@ -68,18 +67,9 @@ interface FsProjectRaw {
 }
 
 function readFsProjectFiles(): FsProjectRaw[] {
-  if (!fs.existsSync(PROJECTS_DIR)) return [];
-  const files = fs
-    .readdirSync(PROJECTS_DIR)
-    .filter((f) => f.endsWith(".mdx") || f.endsWith(".md"));
-
-  return files.map((filename) => {
-    const slug = filename.replace(/\.mdx?$/, "");
-    const filePath = path.join(PROJECTS_DIR, filename);
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const { data, content } = matter(raw);
-    return { slug, data: data as FsFrontmatter, content };
-  });
+  return readFsContentFiles<FsFrontmatter>(PROJECTS_DIR).map(
+    ({ slug, data, content }) => ({ slug, data, content })
+  );
 }
 
 function fsFrontmatterToProject(

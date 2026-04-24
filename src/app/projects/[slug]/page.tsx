@@ -6,18 +6,16 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import rehypePrettyCode from "rehype-pretty-code";
-import rehypeSlug from "rehype-slug";
-import { CyberChart } from "@/components/blog/CyberChart";
-import { CodeBlock } from "@/components/blog/CodeBlock";
-import { MermaidDiagram } from "@/components/blog/MermaidDiagram";
 import { TraceViewer } from "@/components/regex-viz/TraceViewer";
 import { fsProjectComponents } from "@/lib/fs-projects-registry";
 import { BASE_URL, SITE_NAME } from "@/lib/constants";
 import { getCategoryChain } from "@/lib/categories";
+import {
+  PROJECT_PROSE_CLASS,
+  mdxRemoteOptions,
+  projectTableMdxComponents,
+  sharedMdxComponents,
+} from "@/components/mdx/mdx-rendering";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -60,86 +58,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const mdxComponents = {
   TraceViewer,
-  CyberChart: (props: any) => (
-    <CyberChart
-      dataString={props.data}
-      type={props.type || "stepAfter"}
-      yScale={props.yScale || "linear"}
-    />
-  ),
-  Mermaid: (props: any) => {
-    // Notion→MDX converter emits <Mermaid chart="<base64>" />. We decode
-    // server-side so the client component only ever sees a plain string.
-    const code =
-      typeof props.code === "string"
-        ? props.code
-        : typeof props.chart === "string"
-        ? Buffer.from(props.chart, "base64").toString("utf-8")
-        : "";
-    return <MermaidDiagram code={code} />;
-  },
-  pre: (props: any) => <CodeBlock {...props} />,
-  code: ({ className, children, ...props }: any) => (
-    <code className={className} {...props}>
-      {children}
-    </code>
-  ),
-  img: (props: any) => (
-    <figure className="my-10">
-      <img {...props} className="w-full rounded border border-black/10" />
-      {props.alt && (
-        <figcaption className="text-center text-sm text-muted mt-3 font-mono tracking-wide">
-          {props.alt}
-        </figcaption>
-      )}
-    </figure>
-  ),
-  // Explicit th/td overrides so prose-neutral's default table styling
-  // (which leaves headers and body cells to negotiate alignment via `align`
-  // attributes that GFM rarely emits) doesn't leak through. Left-aligned
-  // everywhere, top-padded divider under the header row, and a subtle row
-  // stripe on tbody so the visual scan matches a CLI table.
-  table: (props: any) => (
-    <div className="table-wrap my-8 overflow-x-auto -mx-5 px-5">
-      <table
-        className="min-w-[600px] w-full border-collapse text-sm"
-        {...props}
-      />
-    </div>
-  ),
-  thead: (props: any) => (
-    <thead className="border-b border-black/20" {...props} />
-  ),
-  th: (props: any) => {
-    const { align, ...rest } = props;
-    return (
-      <th
-        className="py-2 pr-6 text-left align-top font-semibold text-black whitespace-nowrap"
-        style={align ? { textAlign: align } : undefined}
-        {...rest}
-      />
-    );
-  },
-  td: (props: any) => {
-    const { align, ...rest } = props;
-    return (
-      <td
-        className="py-2 pr-6 text-left align-top text-black/85"
-        style={align ? { textAlign: align } : undefined}
-        {...rest}
-      />
-    );
-  },
-  tr: (props: any) => (
-    <tr className="border-b border-black/5 last:border-0" {...props} />
-  ),
+  ...sharedMdxComponents,
+  ...projectTableMdxComponents,
 };
-
-// Shared prose wrapper; same Tailwind arbitrary-selector stack as the blog
-// detail page — kept inline rather than abstracted so rebalancing typography
-// in one place only touches that page.
-const PROSE_CLASS =
-  "prose prose-neutral max-w-none overflow-hidden text-black/90 leading-[1.85] text-base md:text-lg [&_p]:mb-5 [&_p]:mt-0 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-black [&_h1]:mt-14 [&_h1]:mb-6 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-black [&_h2]:mt-14 [&_h2]:mb-6 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-black [&_h3]:mt-10 [&_h3]:mb-4 [&_blockquote]:border-l-2 [&_blockquote]:border-black/20 [&_blockquote]:pl-6 [&_blockquote]:my-8 [&_blockquote]:italic [&_blockquote]:text-muted [&_a]:text-black [&_a]:underline [&_a]:underline-offset-4 [&_strong]:text-black [&_ul]:my-5 [&_ul]:space-y-2 [&_li]:text-black/80 [&_pre]:bg-[#121212] [&_pre]:text-white/90 [&_pre]:p-4 [&_pre]:md:p-5 [&_pre]:my-8 [&_pre]:md:my-10 [&_pre]:rounded-xl [&_pre]:overflow-x-auto [&_pre]:text-xs [&_pre]:md:text-sm [&_pre]:shadow-lg [&_pre]:leading-relaxed [&_pre]:tracking-wide [&_pre]:max-w-full";
 
 // Branch on source: filesystem MDX projects are compiled via @next/mdx so
 // their top-level `import` / JSON imports resolve through webpack, while
@@ -149,7 +70,7 @@ async function renderProjectContent(slug: string, content: string) {
   if (fsLoader) {
     const { default: MdxContent } = await fsLoader();
     return (
-      <div className={PROSE_CLASS}>
+      <div className={PROJECT_PROSE_CLASS}>
         <MdxContent components={mdxComponents} />
       </div>
     );
@@ -166,20 +87,11 @@ async function renderProjectContent(slug: string, content: string) {
   }
 
   return (
-    <div className={PROSE_CLASS}>
+    <div className={PROJECT_PROSE_CLASS}>
       <MDXRemote
         source={content}
         components={mdxComponents}
-        options={{
-          mdxOptions: {
-            remarkPlugins: [remarkGfm, remarkMath],
-            rehypePlugins: [
-              rehypeSlug,
-              rehypeKatex,
-              [rehypePrettyCode, { theme: "vitesse-dark" }],
-            ],
-          },
-        }}
+        options={mdxRemoteOptions}
       />
     </div>
   );

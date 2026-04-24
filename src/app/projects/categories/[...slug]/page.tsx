@@ -1,17 +1,12 @@
-import { Footer } from "@/components/ui/Footer";
-import { LabBackground } from "@/components/ui/LabBackground";
-import { Navigation } from "@/components/layout/Navigation";
 import { ProjectCard } from "@/components/projects/ProjectCard";
-import { CategoryCard } from "@/components/categories/CategoryCard";
-import { CategoryFilter } from "@/components/categories/CategoryFilter";
+import { CategoryDetailPage } from "@/components/categories/CategoryDetailPage";
 import {
   getCategoryTree,
   resolveCategoryPath,
-  collectSubtreeIds,
   flattenTree,
 } from "@/lib/categories";
 import { getAllProjects } from "@/lib/projects";
-import Link from "next/link";
+import { getItemsInCategorySubtree } from "@/lib/category-detail";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -51,131 +46,25 @@ export default async function ProjectCategoryPage({ params }: Props) {
   ]);
   if (!node) notFound();
 
-  const subtreeIds = collectSubtreeIds(node);
-  const projects = allProjects.filter(
-    (p) => p.categoryId && subtreeIds.includes(p.categoryId)
-  );
-
-  const activeRootSlug = slug[0];
-
-  const crumbs = slug.map((seg, i) => ({
-    seg,
-    href: `/projects/categories/${slug.slice(0, i + 1).join("/")}`,
-    isLast: i === slug.length - 1,
-  }));
+  const projects = getItemsInCategorySubtree(allProjects, node);
 
   return (
-    <>
-      <LabBackground />
-      <Navigation />
-      <section className="relative min-h-screen pt-32 pb-20 px-6 md:px-16">
-        <div className="max-w-5xl mx-auto">
-          {/* Breadcrumb */}
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-12 font-mono text-[11px] tracking-[0.15em] text-muted">
-            <Link
-              href="/projects"
-              className="shrink-0 hover:text-black transition-colors"
-            >
-              &gt; projects
-            </Link>
-            {crumbs.map((c) => (
-              <span key={c.href} className="flex items-center gap-x-2">
-                <span className="shrink-0">/</span>
-                {c.isLast ? (
-                  <span className="text-black break-all">{c.seg}</span>
-                ) : (
-                  <Link
-                    href={c.href}
-                    className="shrink-0 hover:text-black transition-colors break-all"
-                  >
-                    {c.seg}
-                  </Link>
-                )}
-              </span>
-            ))}
-          </div>
-
-          {/* Category filter tabs */}
-          <CategoryFilter
-            basePath="/projects"
-            categoryBase="/projects/categories"
-            roots={projectRoots}
-            activeSlug={activeRootSlug}
-          />
-
-          {/* Header */}
-          <header className="mb-16">
-            <div className="font-mono text-[11px] tracking-[0.2em] text-muted mb-4">
-              &gt; CATEGORY
-            </div>
-            <h1 className="text-3xl md:text-5xl font-bold text-black tracking-tight mb-6 leading-tight">
-              {node.name}
-            </h1>
-            {node.description && (
-              <p className="text-lg text-muted leading-relaxed mb-8 max-w-2xl">
-                {node.description}
-              </p>
-            )}
-            <div className="flex items-center gap-4 font-mono text-[10px] text-muted tracking-wider">
-              <span>COUNT: {String(projects.length).padStart(2, "0")}</span>
-              {node.children.length > 0 && (
-                <>
-                  <span>|</span>
-                  <span>SUB: {String(node.children.length).padStart(2, "0")}</span>
-                </>
-              )}
-            </div>
-            <div className="h-px w-full bg-border mt-8" />
-          </header>
-
-          {/* Subcategories */}
-          {node.children.length > 0 && (
-            <div className="mb-16">
-              <h2 className="font-mono text-[11px] tracking-[0.2em] text-muted mb-6">
-                &gt; SUBCATEGORIES
-              </h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {node.children.map((child, i) => (
-                  <CategoryCard
-                    key={child.id}
-                    node={child}
-                    basePath="/projects/categories"
-                    count={
-                      allProjects.filter(
-                        (p) =>
-                          p.categoryId &&
-                          collectSubtreeIds(child).includes(p.categoryId)
-                      ).length
-                    }
-                    index={i}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Project grid */}
-          <div>
-            <h2 className="font-mono text-[11px] tracking-[0.2em] text-muted mb-6">
-              &gt; PROJECTS
-            </h2>
-            {projects.length > 0 ? (
-              <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-                {projects.map((project, i) => (
-                  <ProjectCard key={project.slug} project={project} index={i} />
-                ))}
-              </div>
-            ) : (
-              <div className="border border-border/50 p-12 text-center">
-                <p className="font-mono text-sm text-muted tracking-wider">
-                  NO PROJECTS YET IN THIS CATEGORY
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-      <Footer />
-    </>
+    <CategoryDetailPage
+      sectionPath="/projects"
+      sectionLabel="projects"
+      categoryBasePath="/projects/categories"
+      roots={projectRoots}
+      node={node}
+      slug={slug}
+      allItems={allProjects}
+      items={projects}
+      maxWidthClassName="max-w-5xl mx-auto"
+      countLabel="COUNT"
+      listTitle="PROJECTS"
+      listClassName="grid md:grid-cols-2 gap-6 md:gap-8"
+      emptyMessage="NO PROJECTS YET IN THIS CATEGORY"
+      getItemKey={(project) => project.slug}
+      renderItem={(project, i) => <ProjectCard project={project} index={i} />}
+    />
   );
 }

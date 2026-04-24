@@ -1,7 +1,6 @@
-import fs from "fs";
 import path from "path";
-import matter from "gray-matter";
-import { getNotionPosts, getNotionPostContent, type NotionBlogPost } from "./notion";
+import { getNotionPosts, getNotionPostContent } from "./notion";
+import { readFsContentFileBySlug, readFsContentFiles } from "./fs-content";
 
 const BLOG_DIR = path.join(process.cwd(), "src/content/blog");
 
@@ -16,19 +15,18 @@ export interface BlogPost {
   categoryName: string;
 }
 
+interface FsBlogFrontmatter {
+  title?: string;
+  date?: string;
+  description?: string;
+  tags?: string[];
+}
+
 // ─── Filesystem helpers (sync, private) ──────────────────────────────
 
 function getFilesystemPosts(): BlogPost[] {
-  if (!fs.existsSync(BLOG_DIR)) return [];
-
-  const files = fs.readdirSync(BLOG_DIR).filter((f) => f.endsWith(".mdx") || f.endsWith(".md"));
-
-  return files.map((filename) => {
-    const slug = filename.replace(/\.mdx?$/, "");
-    const filePath = path.join(BLOG_DIR, filename);
-    const fileContent = fs.readFileSync(filePath, "utf-8");
-    const { data } = matter(fileContent);
-
+  return readFsContentFiles<FsBlogFrontmatter>(BLOG_DIR).map(
+    ({ slug, data }) => {
     return {
       slug,
       title: data.title || slug,
@@ -38,18 +36,15 @@ function getFilesystemPosts(): BlogPost[] {
       categoryId: null,
       categoryName: "",
     };
-  });
+    }
+  );
 }
 
 function getFilesystemPostBySlug(slug: string) {
-  const mdxPath = path.join(BLOG_DIR, `${slug}.mdx`);
-  const mdPath = path.join(BLOG_DIR, `${slug}.md`);
-  const filePath = fs.existsSync(mdxPath) ? mdxPath : mdPath;
-  if (!fs.existsSync(filePath)) return null;
+  const fsPost = readFsContentFileBySlug<FsBlogFrontmatter>(BLOG_DIR, slug);
+  if (!fsPost) return null;
 
-  const fileContent = fs.readFileSync(filePath, "utf-8");
-  const { data, content } = matter(fileContent);
-
+  const { data, content } = fsPost;
   return {
     slug,
     title: data.title || slug,
