@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ComponentType, ElementType } from "react";
 
 // Filesystem MDX project registry — one entry per `.mdx` file under
 // `src/content/projects/`. Must be manually kept in sync when adding a new
@@ -12,7 +12,7 @@ import type { ComponentType } from "react";
 // imports working naturally in MDX. Notion-only projects don't touch this.
 
 export type MdxComponentProps = {
-  components?: Record<string, ComponentType<any>>;
+  components?: Record<string, ElementType>;
 };
 
 export const fsProjectComponents: Record<

@@ -1,8 +1,12 @@
 "use client";
 
+import type { ComponentPropsWithoutRef } from "react";
 import { useRef, useState } from "react";
 
-export function CodeBlock({ children, ...props }: any) {
+export function CodeBlock({
+  children,
+  ...props
+}: ComponentPropsWithoutRef<"pre">) {
   const preRef = useRef<HTMLPreElement>(null);
   const [copied, setCopied] = useState(false);
 

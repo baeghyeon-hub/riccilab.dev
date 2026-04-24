@@ -5,7 +5,6 @@ import { getAllCategories } from "./categories";
 import type {
   BlockObjectResponse,
   RichTextItemResponse,
-  PartialBlockObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });

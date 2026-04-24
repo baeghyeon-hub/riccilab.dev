@@ -36,7 +36,11 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
     }
 
     const handleVisibility = () => {
-      document.hidden ? stopLoop() : startLoop();
+      if (document.hidden) {
+        stopLoop();
+      } else {
+        startLoop();
+      }
     };
 
     document.addEventListener("visibilitychange", handleVisibility);

@@ -84,7 +84,11 @@ export function LabBackground() {
     }, container);
 
     const handleVisibility = () => {
-      document.hidden ? tl.pause() : tl.resume();
+      if (document.hidden) {
+        tl.pause();
+      } else {
+        tl.resume();
+      }
     };
 
     document.addEventListener("visibilitychange", handleVisibility);
