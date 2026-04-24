@@ -12,7 +12,7 @@ export function GiscusComments() {
   const themeMode = useDocumentThemeMode();
   const theme = mounted
     ? getGiscusThemeUrl(window.location.origin, themeMode)
-    : "";
+    : null;
 
   return (
     <section className="max-w-3xl mx-auto mt-16">
@@ -23,20 +23,22 @@ export function GiscusComments() {
           </span>
           <div className="h-px flex-1 bg-border" />
         </div>
-        <Giscus
-          repo="baeghyeon-hub/riccilab.dev"
-          repoId="R_kgDOR2_IEg"
-          category="General"
-          categoryId="DIC_kwDOR2_IEs4C59ID"
-          mapping="pathname"
-          strict="0"
-          reactionsEnabled="1"
-          emitMetadata="0"
-          inputPosition="top"
-          theme={theme}
-          lang="en"
-          loading="lazy"
-        />
+        {theme && (
+          <Giscus
+            repo="baeghyeon-hub/riccilab.dev"
+            repoId="R_kgDOR2_IEg"
+            category="General"
+            categoryId="DIC_kwDOR2_IEs4C59ID"
+            mapping="pathname"
+            strict="0"
+            reactionsEnabled="1"
+            emitMetadata="0"
+            inputPosition="top"
+            theme={theme}
+            lang="en"
+            loading="lazy"
+          />
+        )}
       </div>
     </section>
   );
