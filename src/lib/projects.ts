@@ -5,6 +5,11 @@ import { getNotionPostContent } from "./notion";
 import { getAllCategories } from "./categories";
 import { readFsContentFiles } from "./fs-content";
 import {
+  fsFrontmatterToProject,
+  type FsProjectFrontmatter,
+  type FsProjectRaw,
+} from "./project-frontmatter";
+import {
   getCheckboxValue,
   getDateStart,
   getMultiSelectNames,
@@ -58,79 +63,10 @@ function slugify(title: string): string {
 
 // ─── Filesystem helpers (sync, private) ──────────────────────────────
 
-interface FsFrontmatter {
-  title?: string;
-  date?: string;
-  description?: string;
-  summary?: string;
-  category?: string;
-  tech?: string[] | string;
-  status?: ProjectStatus;
-  featured?: boolean;
-  github?: string;
-  link?: string;
-  order?: number;
-}
-
-interface FsProjectRaw {
-  slug: string;
-  data: FsFrontmatter;
-  content: string;
-}
-
 function readFsProjectFiles(): FsProjectRaw[] {
-  return readFsContentFiles<FsFrontmatter>(PROJECTS_DIR).map(
+  return readFsContentFiles<FsProjectFrontmatter>(PROJECTS_DIR).map(
     ({ slug, data, content }) => ({ slug, data, content })
   );
-}
-
-function fsFrontmatterToProject(
-  raw: FsProjectRaw,
-  categoryNameToId: Map<string, string>
-): Project {
-  const { slug, data } = raw;
-  const description = data.description ?? data.summary ?? "";
-  const categoryName = (data.category ?? "").trim();
-  // Match frontmatter category against Notion project categories case-
-  // insensitively, so breadcrumb + /projects/categories/<slug> still works
-  // without duplicating the category list in two places. Unmatched names
-  // render as plain text with no linkable category chain.
-  const categoryId =
-    categoryName.length > 0
-      ? categoryNameToId.get(categoryName.toLowerCase()) ?? null
-      : null;
-  const tech = Array.isArray(data.tech)
-    ? data.tech
-    : typeof data.tech === "string"
-    ? data.tech.split(",").map((t) => t.trim()).filter(Boolean)
-    : [];
-
-  // gray-matter auto-parses unquoted YAML dates (e.g. `date: 2026-04-20`)
-  // into JS Date objects, which break when rendered as React children.
-  // Normalize to an ISO `YYYY-MM-DD` string regardless of source shape.
-  const rawDate = data.date as unknown;
-  const dateStr =
-    rawDate instanceof Date
-      ? rawDate.toISOString().slice(0, 10)
-      : typeof rawDate === "string"
-      ? rawDate
-      : "";
-
-  return {
-    slug,
-    title: data.title ?? slug,
-    description,
-    categoryId,
-    categoryName,
-    tech,
-    status: (data.status ?? "") as ProjectStatus,
-    featured: data.featured ?? false,
-    date: dateStr,
-    link: data.link,
-    github: data.github,
-    order: data.order ?? 999,
-    notionPageId: null,
-  };
 }
 
 // ─── Public async API ────────────────────────────────────────────────
