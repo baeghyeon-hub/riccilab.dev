@@ -10,18 +10,16 @@
 import { useMemo } from "react";
 import dagre from "dagre";
 
+import {
+  midpoint,
+  pointsToPath,
+  type LaidOutEdge,
+  type Point,
+} from "./graph-geometry";
 import { EPSILON, type Nfa } from "./trace";
 
 const NODE_R = 18;
 const NODE_D = NODE_R * 2;
-
-type Point = { x: number; y: number };
-type LaidOutEdge = {
-  from: number;
-  to: number;
-  label: string;
-  points: Point[];
-};
 
 export type NfaGraphProps = {
   nfa: Nfa;
@@ -263,15 +261,4 @@ function computeLayout(nfa: Nfa) {
   });
 
   return { nodes, edges, width, height };
-}
-
-function pointsToPath(pts: Point[]): string {
-  if (pts.length === 0) return "";
-  const [first, ...rest] = pts;
-  return `M ${first.x} ${first.y} ` + rest.map((p) => `L ${p.x} ${p.y}`).join(" ");
-}
-
-function midpoint(pts: Point[]): Point {
-  if (pts.length === 0) return { x: 0, y: 0 };
-  return pts[Math.floor(pts.length / 2)];
 }
