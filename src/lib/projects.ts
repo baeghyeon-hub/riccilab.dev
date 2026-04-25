@@ -4,6 +4,18 @@ import { unstable_cache } from "next/cache";
 import { getNotionPostContent } from "./notion";
 import { getAllCategories } from "./categories";
 import { readFsContentFiles } from "./fs-content";
+import {
+  getCheckboxValue,
+  getDateStart,
+  getMultiSelectNames,
+  getNumberValue,
+  getRelationIds,
+  getRichText,
+  getSelectName,
+  getTitleText,
+  getUrlValue,
+  requireFullPage,
+} from "./notion-properties";
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const PROJECTS_DATA_SOURCE_ID = process.env.NOTION_PROJECTS_DATABASE_ID ?? "";
@@ -155,15 +167,14 @@ export const getAllProjects = unstable_cache(
           ],
         });
 
-        notionProjects = response.results.map((page: any) => {
+        notionProjects = response.results.map((result) => {
+          const page = requireFullPage(result);
           const props = page.properties;
 
-          const title = props.Title?.title?.[0]?.plain_text ?? "Untitled";
-          const slug =
-            props.Slug?.rich_text?.[0]?.plain_text ?? slugify(title);
+          const title = getTitleText(props, "Title") ?? "Untitled";
+          const slug = getRichText(props, "Slug") ?? slugify(title);
 
-          const categoryId: string | null =
-            props.Category?.relation?.[0]?.id ?? null;
+          const categoryId = getRelationIds(props, "Category")[0] ?? null;
           const categoryName = categoryId
             ? categoryNameById.get(categoryId) ?? ""
             : "";
@@ -171,16 +182,16 @@ export const getAllProjects = unstable_cache(
           return {
             slug,
             title,
-            description: props.Description?.rich_text?.[0]?.plain_text ?? "",
+            description: getRichText(props, "Description") ?? "",
             categoryId,
             categoryName,
-            tech: props.Tech?.multi_select?.map((t: any) => t.name) ?? [],
-            status: (props.Status?.select?.name ?? "") as ProjectStatus,
-            featured: props.Featured?.checkbox ?? false,
-            date: props.Date?.date?.start ?? "",
-            link: props.Link?.url ?? undefined,
-            github: props.GitHub?.url ?? undefined,
-            order: props.Order?.number ?? 999,
+            tech: getMultiSelectNames(props, "Tech"),
+            status: (getSelectName(props, "Status") ?? "") as ProjectStatus,
+            featured: getCheckboxValue(props, "Featured") ?? false,
+            date: getDateStart(props, "Date") ?? "",
+            link: getUrlValue(props, "Link"),
+            github: getUrlValue(props, "GitHub"),
+            order: getNumberValue(props, "Order") ?? 999,
             notionPageId: page.id,
           } satisfies Project;
         });

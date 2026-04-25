@@ -6,6 +6,14 @@ import type {
   BlockObjectResponse,
   RichTextItemResponse,
 } from "@notionhq/client/build/src/api-endpoints";
+import {
+  getDateStart,
+  getMultiSelectNames,
+  getRelationIds,
+  getRichText,
+  getTitleText,
+  requireFullPage,
+} from "./notion-properties";
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const DATABASE_ID = process.env.NOTION_BLOG_DATABASE_ID ?? "";
@@ -252,31 +260,29 @@ export const getNotionPosts = unstable_cache(
       ]);
       const categoryNameById = new Map(categories.map((c) => [c.id, c.name]));
 
-      return response.results.map((page: any) => {
+      return response.results.map((result) => {
+        const page = requireFullPage(result);
         const props = page.properties;
 
         const title =
-          props.Title?.title?.[0]?.plain_text ??
-          props.Name?.title?.[0]?.plain_text ??
+          getTitleText(props, "Title") ??
+          getTitleText(props, "Name") ??
           "Untitled";
 
-        const date = props.Date?.date?.start ?? "";
+        const date = getDateStart(props, "Date") ?? "";
 
-        const description =
-          props.Description?.rich_text?.[0]?.plain_text ?? "";
+        const description = getRichText(props, "Description") ?? "";
 
-        const tags: string[] =
-          props.Tags?.multi_select?.map((t: any) => t.name) ?? [];
+        const tags = getMultiSelectNames(props, "Tags");
 
         const slug =
-          props.Slug?.rich_text?.[0]?.plain_text ??
+          getRichText(props, "Slug") ??
           title
             .toLowerCase()
             .replace(/[^a-z0-9가-힣ㄱ-ㅎㅏ-ㅣ\s-]/g, "")
             .replace(/\s+/g, "-");
 
-        const categoryId: string | null =
-          props.Category?.relation?.[0]?.id ?? null;
+        const categoryId = getRelationIds(props, "Category")[0] ?? null;
         const categoryName = categoryId
           ? categoryNameById.get(categoryId) ?? ""
           : "";

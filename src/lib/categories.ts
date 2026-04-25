@@ -1,5 +1,13 @@
 import { Client } from "@notionhq/client";
 import { unstable_cache } from "next/cache";
+import {
+  getCheckboxValue,
+  getNumberValue,
+  getRelationIds,
+  getRichText,
+  getTitleText,
+  requireFullPage,
+} from "./notion-properties";
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 
@@ -62,23 +70,24 @@ async function queryOneDataSource(
       sorts: [{ property: "Order", direction: "ascending" }],
     });
 
-    return response.results.map((page: any) => {
+    return response.results.map((result) => {
+      const page = requireFullPage(result);
       const props = page.properties;
-      const name = props.Name?.title?.[0]?.plain_text ?? "Untitled";
-      const slugRaw = props.Slug?.rich_text?.[0]?.plain_text ?? "";
+      const name = getTitleText(props, "Name") ?? "Untitled";
+      const slugRaw = getRichText(props, "Slug") ?? "";
       // Parent relation is optional — the split DBs ship flat by default,
       // but we keep the field so nested hierarchies still work if added.
-      const parentRelation = props.Parent?.relation ?? [];
+      const parentIds = getRelationIds(props, "Parent");
 
       return {
         id: page.id,
         name,
         slug: normalizeSlug(slugRaw || name),
-        parentId: parentRelation[0]?.id ?? null,
-        order: props.Order?.number ?? 999,
-        description: props.Description?.rich_text?.[0]?.plain_text ?? "",
+        parentId: parentIds[0] ?? null,
+        order: getNumberValue(props, "Order") ?? 999,
+        description: getRichText(props, "Description") ?? "",
         scope: [scope],
-        published: props.Published?.checkbox ?? false,
+        published: getCheckboxValue(props, "Published") ?? false,
       } satisfies Category;
     });
   } catch (err) {
