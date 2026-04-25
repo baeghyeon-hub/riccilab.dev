@@ -2,6 +2,7 @@ import { getAllProjects, getProjectBySlug } from "@/lib/projects";
 import { Footer } from "@/components/ui/Footer";
 import { LabBackground } from "@/components/ui/LabBackground";
 import { Navigation } from "@/components/layout/Navigation";
+import { ContentProtect } from "@/components/blog/ContentProtect";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -232,7 +233,9 @@ export default async function ProjectDetailPage({ params }: Props) {
           </header>
 
           {/* Content */}
-          {await renderProjectContent(slug, project.content)}
+          <ContentProtect>
+            {await renderProjectContent(slug, project.content)}
+          </ContentProtect>
 
           {/* End mark */}
           <div className="mt-20 pt-8 border-t border-border font-mono text-[10px] text-muted tracking-wider">
