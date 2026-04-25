@@ -81,13 +81,21 @@ function CodeMdx({
   );
 }
 
-function ImageMdx(props: ComponentPropsWithoutRef<"img">) {
+function ImageMdx({
+  alt = "",
+  ...props
+}: ComponentPropsWithoutRef<"img">) {
   return (
     <figure className="my-10">
-      <img {...props} className="w-full rounded border border-black/10" />
-      {props.alt && (
+      {/* eslint-disable-next-line @next/next/no-img-element -- MDX/Notion images may be external and dimensionless. */}
+      <img
+        {...props}
+        alt={alt}
+        className="w-full rounded border border-black/10"
+      />
+      {alt && (
         <figcaption className="text-center text-sm text-muted mt-3 font-mono tracking-wide">
-          {props.alt}
+          {alt}
         </figcaption>
       )}
     </figure>

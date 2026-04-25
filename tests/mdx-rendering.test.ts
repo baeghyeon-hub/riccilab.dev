@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  Children,
+  isValidElement,
+  type ComponentPropsWithoutRef,
+  type ReactElement,
+  type ReactNode,
+} from "react";
+import {
   BLOG_PROSE_CLASS,
   PROJECT_PROSE_CLASS,
   CODE_BLOCK_PROSE_CLASS,
@@ -60,4 +67,35 @@ test("prose classes preserve blog-only and project-only styling boundaries", () 
   assert.ok(BLOG_PROSE_CLASS.endsWith(CODE_BLOCK_PROSE_CLASS));
   assert.match(BLOG_PROSE_CLASS, /\[&_figure_img\]:w-full/);
   assert.doesNotMatch(PROJECT_PROSE_CLASS, /\[&_figure_img\]:w-full/);
+});
+
+function renderSharedMdxImage(props: ComponentPropsWithoutRef<"img">) {
+  const figure = sharedMdxComponents.img(props);
+  assert.ok(isValidElement(figure));
+  return figure as ReactElement<{ children?: ReactNode }>;
+}
+
+test("MDX image renderer keeps missing alt text decorative", () => {
+  const figure = renderSharedMdxImage({ src: "/diagram.png" });
+  const [image] = Children.toArray(figure.props.children);
+
+  assert.ok(isValidElement(image));
+  assert.equal(
+    (image as ReactElement<ComponentPropsWithoutRef<"img">>).props.alt,
+    ""
+  );
+});
+
+test("MDX image renderer keeps alt text as the visible caption", () => {
+  const figure = renderSharedMdxImage({
+    src: "/diagram.png",
+    alt: "State diagram",
+  });
+  const [, caption] = Children.toArray(figure.props.children);
+
+  assert.ok(isValidElement(caption));
+  assert.equal(
+    (caption as ReactElement<{ children?: ReactNode }>).props.children,
+    "State diagram"
+  );
 });
