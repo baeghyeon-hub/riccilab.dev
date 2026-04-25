@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
+import { scrambleReveal, scrambleText } from "@/lib/glitch-text";
 
 const GLITCH_CHARS = "!@#$%&_░▒▓█▀▄?><";
 
@@ -19,16 +20,7 @@ export function GlitchTitle({ text, className = "" }: { text: string; className?
     const interval = setInterval(() => {
       frame++;
       const progress = frame / totalFrames;
-      const decoded = original
-        .split("")
-        .map((ch, i) => {
-          if (ch === " ") return ch;
-          return i / original.length < progress
-            ? ch
-            : GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
-        })
-        .join("");
-      el.textContent = decoded;
+      el.textContent = scrambleReveal(original, progress, GLITCH_CHARS);
 
       if (frame >= totalFrames) {
         clearInterval(interval);
@@ -45,16 +37,7 @@ export function GlitchTitle({ text, className = "" }: { text: string; className?
 
     // Periodic micro-glitch
     const glitchLoop = setInterval(() => {
-      const glitched = original
-        .split("")
-        .map((ch) => {
-          if (ch === " ") return ch;
-          return Math.random() < 0.08
-            ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)]
-            : ch;
-        })
-        .join("");
-      el.textContent = glitched;
+      el.textContent = scrambleText(original, 0.08, GLITCH_CHARS);
       setTimeout(() => {
         el.textContent = original;
       }, 80);

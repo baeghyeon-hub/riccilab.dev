@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
+import { scrambleText } from "@/lib/glitch-text";
 
 const GLITCH_CHARS = "!@#$%&_░▒▓█▀▄?><";
 
@@ -41,10 +42,7 @@ function DesktopReactiveTitle() {
         glitchInterval = setInterval(() => {
           if (currentDist > 0.25) {
             const intensity = Math.min((currentDist - 0.25) * 0.8, 0.3);
-            textEl.textContent = originalText.split("").map((ch) =>
-              ch === "\n" ? ch : Math.random() < intensity
-                ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] : ch
-            ).join("");
+            textEl.textContent = scrambleText(originalText, intensity, GLITCH_CHARS);
           } else {
             textEl.textContent = originalText;
           }
@@ -93,9 +91,7 @@ function MobileTitle() {
 
     const doGlitch = () => {
       // 3-frame glitch burst
-      const scramble = () => originalText.split("").map((ch) =>
-        Math.random() < 0.4 ? GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] : ch
-      ).join("");
+      const scramble = () => scrambleText(originalText, 0.4, GLITCH_CHARS);
 
       textEl.textContent = scramble();
       gsap.to(textEl, { x: Math.random() * 6 - 3, skewX: Math.random() * 4 - 2, duration: 0.05 });
@@ -149,12 +145,7 @@ function RicciFormula() {
     if (!g1 || !g2) return;
 
     const scramble = (intensity: number) =>
-      FORMULA_PLAIN.split("").map((ch) =>
-        ch === " " ? ch
-          : Math.random() < intensity
-            ? FORMULA_GLITCH_CHARS[Math.floor(Math.random() * FORMULA_GLITCH_CHARS.length)]
-            : ch
-      ).join("");
+      scrambleText(FORMULA_PLAIN, intensity, FORMULA_GLITCH_CHARS);
 
     const doGlitch = () => {
       // Layer 1: offset left, color inverted
