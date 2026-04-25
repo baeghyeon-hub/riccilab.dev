@@ -24,6 +24,7 @@ import { useState } from "react";
 import type { ConstructionTrace } from "./construction";
 import { DfaGraph } from "./DfaGraph";
 import { NfaGraph } from "./NfaGraph";
+import { StepControls } from "./StepControls";
 
 export type ConstructionViewerProps = {
   trace: ConstructionTrace;
@@ -120,39 +121,7 @@ export function ConstructionViewer({ trace, className }: ConstructionViewerProps
       </div>
 
       {scrubbable && (
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button
-            type="button"
-            onClick={() => setI(Math.max(0, clamped - 1))}
-            disabled={clamped === 0}
-            aria-label="previous step"
-            style={stepButtonStyle}
-          >
-            ◀
-          </button>
-          <input
-            type="range"
-            min={0}
-            max={last}
-            value={clamped}
-            onChange={(e) => setI(Number(e.target.value))}
-            style={{
-              flex: 1,
-              accentColor: "var(--code-inline-fg)",
-              cursor: "pointer",
-            }}
-            aria-label="step"
-          />
-          <button
-            type="button"
-            onClick={() => setI(Math.min(last, clamped + 1))}
-            disabled={clamped === last}
-            aria-label="next step"
-            style={stepButtonStyle}
-          >
-            ▶
-          </button>
-        </div>
+        <StepControls current={clamped} last={last} onStepChange={setI} />
       )}
 
       {/*
@@ -314,19 +283,3 @@ function Pane({
     </div>
   );
 }
-
-// Mono ghost button: transparent fill, border in theme tokens. Disabled
-// state drops opacity rather than recoloring so the affordance stays
-// legible against the surface tint. Matches TraceViewer.
-const stepButtonStyle: React.CSSProperties = {
-  padding: "4px 10px",
-  fontSize: 14,
-  fontFamily:
-    "var(--font-sans), ui-monospace, SFMono-Regular, Menlo, monospace",
-  color: "var(--color-black)",
-  background: "var(--color-bg)",
-  border: "1px solid var(--color-border)",
-  borderRadius: 4,
-  cursor: "pointer",
-  lineHeight: 1,
-};

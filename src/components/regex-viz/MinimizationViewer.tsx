@@ -33,6 +33,7 @@ import { useMemo, useState } from "react";
 import type { DfaState, DfaTransition } from "./construction";
 import { DfaGraph } from "./DfaGraph";
 import type { MinimizationTrace } from "./minimization";
+import { StepControls } from "./StepControls";
 
 export type MinimizationViewerProps = {
   trace: MinimizationTrace;
@@ -193,39 +194,7 @@ export function MinimizationViewer({
       />
 
       {scrubbable && (
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button
-            type="button"
-            onClick={() => setI(Math.max(0, clamped - 1))}
-            disabled={clamped === 0}
-            aria-label="previous step"
-            style={stepButtonStyle}
-          >
-            ◀
-          </button>
-          <input
-            type="range"
-            min={0}
-            max={last}
-            value={clamped}
-            onChange={(e) => setI(Number(e.target.value))}
-            style={{
-              flex: 1,
-              accentColor: "var(--code-inline-fg)",
-              cursor: "pointer",
-            }}
-            aria-label="step"
-          />
-          <button
-            type="button"
-            onClick={() => setI(Math.min(last, clamped + 1))}
-            disabled={clamped === last}
-            aria-label="next step"
-            style={stepButtonStyle}
-          >
-            ▶
-          </button>
-        </div>
+        <StepControls current={clamped} last={last} onStepChange={setI} />
       )}
 
       {/* Responsive status bar — same pattern as TraceViewer /
@@ -450,20 +419,6 @@ function verdictBadgeStyle(
     fontWeight: 600,
   };
 }
-
-// Mono ghost button matching the other viewers.
-const stepButtonStyle: React.CSSProperties = {
-  padding: "4px 10px",
-  fontSize: 14,
-  fontFamily:
-    "var(--font-sans), ui-monospace, SFMono-Regular, Menlo, monospace",
-  color: "var(--color-black)",
-  background: "var(--color-bg)",
-  border: "1px solid var(--color-border)",
-  borderRadius: 4,
-  cursor: "pointer",
-  lineHeight: 1,
-};
 
 // ─── Helpers — build view-only derived data from the raw trace ──────
 
